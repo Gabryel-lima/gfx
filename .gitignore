@@ -1,0 +1,31 @@
+# Build artifacts
+/build/
+/CMakeFiles/
+/CMakeCache.txt
+/cmake_install.cmake
+/compile_commands.json
+
+# Make and object files
+*.o
+*.obj
+*.so
+*.a
+*.exe
+
+# Editor backups and settings
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+
+# Logs
+*.log
+
+# Generated binaries
+/bin/
+/out/
+
+# Other
+tags
+coverage/
