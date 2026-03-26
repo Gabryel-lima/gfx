@@ -25,7 +25,7 @@ typedef void*    (*PFN_glXCreateContext) (Display*, void*, void*, int); // Cria 
 typedef void     (*PFN_glXMakeCurrent)   (Display*, GLXDrawable, void*); // Faz contexto atual
 
 /** Estrutura com ponteiros para funções X11/GLX e handles */
-typedef struct {
+typedef struct PlatformGL {
     void *x11; /**< Handle para biblioteca X11 */
     void *gl;  /**< Handle para biblioteca GL/GLX */
     PFN_XOpenDisplay         XOpenDisplay;        /**< Ponteiro para XOpenDisplay */

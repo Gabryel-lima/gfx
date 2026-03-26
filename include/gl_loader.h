@@ -28,7 +28,7 @@ typedef GLuint(*PFN_glCreateShader)  (GLenum);                                 /
  * Estrutura com funções carregadas do OpenGL.
  * @note Campos serão nulos se o carregamento falhar.
  */
-typedef struct {
+typedef struct GLProcs {
     void *handle;                 /**< Handle da biblioteca dinâmica */
     PFN_glGenBuffers    GenBuffers; /**< Ponteiro para glGenBuffers */
     PFN_glBindBuffer    BindBuffer; /**< Ponteiro para glBindBuffer */

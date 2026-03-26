@@ -13,7 +13,7 @@ typedef struct Mesh Mesh; // Estrutura que representa uma malha 3D
 typedef struct Material Material; // Estrutura que descreve material/atributos de render
 
 /** Backend gráfico: conjunto de funções que um backend deve implementar */
-typedef struct {
+typedef struct GfxBackend {
     void (*begin_frame)(void *ctx);                        /**< Inicia frame */
     void (*end_frame)  (void *ctx);                        /**< Finaliza frame */
     void (*draw_mesh)  (void *ctx, Mesh *m, Mat4 transform, Material *mat); /**< Desenha uma malha */
@@ -21,7 +21,7 @@ typedef struct {
 } GfxBackend;
 
 /** Contexto gráfico principal */
-typedef struct {
+typedef struct GfxContext {
     GfxBackend backend;      /**< Implementação de backend (CPU/GPU) */
     void       *backend_ctx; /**< Contexto específico do backend (CPUCtx ou GPUCtx) */
 } GfxContext;
