@@ -24,7 +24,14 @@ typedef Window   (*PFN_XCreateSimpleWindow)(Display*, Window, int, int,
 typedef void*    (*PFN_glXCreateContext) (Display*, void*, void*, int); // Cria contexto GLX
 typedef void     (*PFN_glXMakeCurrent)   (Display*, GLXDrawable, void*); // Faz contexto atual
 
-/** Estrutura com ponteiros para funções X11/GLX e handles */
+/** Estrutura com ponteiros para funções X11/GLX e handles 
+ * @param x11 Handle para biblioteca X11 (usado para dlclose)
+ * @param gl Handle para biblioteca GL/GLX (usado para dlclose)
+ * @param XOpenDisplay Ponteiro para função XOpenDisplay
+ * @param XCreateSimpleWindow Ponteiro para função XCreateSimpleWindow
+ * @param glXCreateContext Ponteiro para função glXCreateContext
+ * @param glXMakeCurrent Ponteiro para função glXMakeCurrent
+*/
 typedef struct PlatformGL {
     void *x11; /**< Handle para biblioteca X11 */
     void *gl;  /**< Handle para biblioteca GL/GLX */

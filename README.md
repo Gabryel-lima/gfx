@@ -116,14 +116,30 @@ Fornece `Vec2/3/4`, `Mat4` (column-major), `Quat` e operações usuais (adição
 
 ## Melhorias e Implementações (resumo)
 
-Versão de documentação: 2026-03-25
+Versão de documentação: 2026-03-26
 
-- **Implementado:** biblioteca math (vec/mat/quat) — `gfx_math.h` pronta e usada internamente.
-- **Implementado:** acesso e mapeamento de framebuffer via `/dev/fb0` com `mmap` (backend CPU).
-- **Implementado:** rasterizador por software com correção perspectiva e z-buffer.
-- **Implementado:** clipping por Sutherland–Hodgman contra planos do frustum.
-- **Implementado:** carregamento dinâmico de `libGL.so` e `libX11.so` via `dlopen`/`dlsym` (backend GPU).
-- **Implementado:** resolução de procs GL em runtime e gerenciamento básico de VAO/VBO (GPU).
+- **Implementado:** biblioteca math (vec/mat/quat) — `gfx_math.h` e `src/gfx_math.c`.
+- **Implementado:** acesso e mapeamento de framebuffer via `/dev/fb0` com `mmap` (backend CPU) — `cpu/fb0_platform.c`, `cpu/framebuffer.c`, `include/framebuffer.h`.
+- **Implementado:** rasterizador por software com correção perspectiva e z-buffer — `cpu/rasterizer.c`, `include/rasterizer.h`.
+- **Implementado:** clipping por Sutherland–Hodgman contra os 6 planos do frustum.
+- **Implementado:** parser `.obj` próprio — `src/tinyobj_loader.c`, `include/tinyobj_loader.h`.
+- **Implementado:** demos e exemplos — `examples/main.c`, `examples/tinyobj_demo.c`.
+- **Implementado:** carregamento dinâmico de `libGL.so` e `libX11.so` via `dlopen`/`dlsym` (backend GPU) — `gpu/gl_loader.c`, `include/gl_loader.h`.
+- **Implementado:** resolução de procs GL em runtime e gerenciamento básico de VAO/VBO — `gpu/mesh.c`, `gpu/shader.c`.
+- **Implementado:** criação de janela/contexto via X11/GLX (GPU) — `gpu/x11_platform.c`, `include/x11_platform.h`.
+- **Implementado:** integração e stubs de plataforma — `src/stubs.c`.
+- **Implementado:** documentação de arquitetura — `svg/dual_backend_architecture.svg`.
+- **Incluído / atualizado:** `CMakeLists.txt`, `Makefile`, `LICENSE`, `.gitignore`, e a API pública em `gfx.h`.
+
+**Edições e novos arquivos (resumo)**
+
+- `cpu/`: `fb0_platform.c`, `framebuffer.c`, `rasterizer.c`
+- `gpu/`: `gl_loader.c`, `mesh.c`, `shader.c`, `x11_platform.c`
+- `include/`: `framebuffer.h`, `gl_loader.h`, `mesh.h`, `rasterizer.h`, `shader.h`, `tinyobj_loader.h`, `x11_platform.h`
+- `src/`: `gfx_math.c`, `tinyobj_loader.c`, `stubs.c`
+- `examples/`: `main.c`, `tinyobj_demo.c`
+- `svg/`: `dual_backend_architecture.svg`
+- Outros: `CMakeLists.txt`, `Makefile`, `gfx.h`, `gfx_math.h`, `LICENSE`, `.gitignore`, `README.md`
 
 Melhorias notáveis:
 
@@ -139,7 +155,7 @@ Melhorias notáveis:
 - [x] Loader GL via `dlopen`
 - [x] Janela X11 + contexto GLX
 - [x] VAO/VBO management (GPU)
-- [ ] Parser `.obj` próprio
+- [x] Parser `.obj` próprio
 - [ ] Iluminação Phong
 - [ ] Texturas com correção perspectiva
 - [ ] Sombras (shadow map)

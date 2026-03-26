@@ -7,7 +7,7 @@
 
 # Make and object files
 *.o
-*.obj
+#*.obj
 *.so
 *.a
 *.exe
