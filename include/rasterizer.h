@@ -1,5 +1,7 @@
 #pragma once
 
+#include <math.h>
+
 #include "framebuffer.h"
 #include "../gfx_math.h"
 

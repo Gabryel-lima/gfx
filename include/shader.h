@@ -16,5 +16,9 @@ typedef struct Shader Shader; // Tipo opaco que representa um programa shader
  */
 Shader* shader_create_from_source(const char *vert_src, const char *frag_src);
 
-/** Destroi um `Shader` previamente criado */
+/** Destroi um `Shader` previamente criado 
+ * @param s Ponteiro para o Shader a ser destruído
+ * @return void
+ * @note Após chamar esta função, o ponteiro `s` não deve ser usado novamente
+*/
 void shader_destroy(Shader *s);

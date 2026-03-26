@@ -114,6 +114,22 @@ Fornece `Vec2/3/4`, `Mat4` (column-major), `Quat` e operações usuais (adição
 - Os procs GL são resolvidos em runtime (ex.: `glGenBuffers`, `glBufferData`, `glCreateShader`, ...).
 - Criação de janela/contexto é feita via X11/GLX carregados dinamicamente.
 
+## Melhorias e Implementações (resumo)
+
+Versão de documentação: 2026-03-25
+
+- **Implementado:** biblioteca math (vec/mat/quat) — `gfx_math.h` pronta e usada internamente.
+- **Implementado:** acesso e mapeamento de framebuffer via `/dev/fb0` com `mmap` (backend CPU).
+- **Implementado:** rasterizador por software com correção perspectiva e z-buffer.
+- **Implementado:** clipping por Sutherland–Hodgman contra planos do frustum.
+- **Implementado:** carregamento dinâmico de `libGL.so` e `libX11.so` via `dlopen`/`dlsym` (backend GPU).
+- **Implementado:** resolução de procs GL em runtime e gerenciamento básico de VAO/VBO (GPU).
+
+Melhorias notáveis:
+
+- Arquitetura de backends unificada via `gfx.h`, permitindo troca em runtime.
+- Exemplo em `examples/main.c` demonstrando inicialização, camera e loop principal.
+
 ## Roadmap
 
 - [x] Math library (vec/mat/quat)
@@ -132,4 +148,4 @@ Fornece `Vec2/3/4`, `Mat4` (column-major), `Quat` e operações usuais (adição
 
 ## Licença
 
-[LICENSE](LICENSE) — MIT License.
+Veja [LICENSE](LICENSE) — MIT License.

@@ -1,7 +1,8 @@
 #pragma once
 
-#include "../gfx_math.h"
 #include <stdint.h>
+
+#include "../gfx_math.h"
 
 /**
  * @file include/framebuffer.h
@@ -15,7 +16,11 @@
  */
 Framebuffer fb_open(const char *path);
 
-/** Fecha e desmapeia recursos associados ao framebuffer */
+/** Fecha e desmapeia recursos associados ao framebuffer 
+ * @param fb Ponteiro para Framebuffer a ser fechado
+ * @return void
+ * @note Após chamar esta função, o ponteiro `fb` não deve ser usado novamente sem reabri-lo.
+*/
 void fb_close(Framebuffer *fb);
 
 /**
@@ -27,5 +32,9 @@ void fb_close(Framebuffer *fb);
  */
 void fb_set_pixel(Framebuffer *fb, int x, int y, uint32_t rgba);
 
-/** Limpa o framebuffer com uma cor RGBA */
+/** Limpa o framebuffer com uma cor RGBA 
+ * @param fb Ponteiro para Framebuffer
+ * @param rgba Cor de limpeza no formato 0xAARRGGBB (uint32_t)
+ * @return void
+*/
 void fb_clear(Framebuffer *fb, uint32_t rgba);
