@@ -6,6 +6,7 @@ set(CMAKE_C_STANDARD 99)
 add_executable(gfx_demo
     examples/main.c
     src/stubs.c
+    gfx_math.c
 )
 
 target_include_directories(gfx_demo PRIVATE

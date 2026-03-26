@@ -32,6 +32,56 @@ typedef struct Vec4 {
 /** Matriz 4x4 (armazenada como 4 vetores Vec4) */
 typedef struct Mat4 { Vec4 col[4]; } Mat4; // Matriz de transformação 4x4
 
+/** min calcula o valor mínimo entre dois inteiros
+ * @param a Primeiro valor
+ * @param b Segundo valor
+ * @return O valor mínimo entre a e b
+*/
+int min(int a, int b);
+
+/** max calcula o valor máximo entre dois inteiros
+ * @param a Primeiro valor
+ * @param b Segundo valor
+ * @return O valor máximo entre a e b
+*/
+int max(int a, int b);
+
+/** fmiminf calcula o valor mínimo entre dois floats 
+ * @param a Primeiro valor
+ * @param b Segundo valor
+ * @return O valor mínimo entre a e b
+*/
+float fminf(float a, float b);
+
+/** fmaxf calcula o valor máximo entre dois floats
+ * @param a Primeiro valor
+ * @param b Segundo valor
+ * @return O valor máximo entre a e b
+*/
+float fmaxf(float a, float b);
+
+/** Component-wise minimum for Vec3
+ * @param a Primeiro vetor
+ * @param b Segundo vetor
+ * @return Vetor cujos componentes são o mínimo entre `a` e `b`
+ */
+Vec3 vec3_min(Vec3 a, Vec3 b);
+
+/** Component-wise maximum for Vec3
+ * @param a Primeiro vetor
+ * @param b Segundo vetor
+ * @return Vetor cujos componentes são o máximo entre `a` e `b`
+ */
+Vec3 vec3_max(Vec3 a, Vec3 b);
+
+/** Clamp cada componente de `v` entre `lo` e `hi` 
+ * @param v Vetor a ser clamped
+ * @param lo Valor mínimo para cada componente
+ * @param hi Valor máximo para cada componente
+ * @return Vetor resultante do clamp de `v`
+*/
+Vec3 vec3_clamp(Vec3 v, float lo, float hi);
+
 /** Calcula o valor da aresta em 2D para rasterização 
  * @param a Primeiro vértice do triângulo
  * @param b Segundo vértice do triângulo
