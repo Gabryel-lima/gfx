@@ -3,6 +3,8 @@
 /**
  * @file tiny_loader.h
  * @brief Interface pública do tinyobjloader, um carregador de arquivos .obj e .mtl.
+ * @author Gabryel-lima
+ * @date 2026-05-01
  */
 
 #ifndef TINYOBJ_LOADER_C_H_  // Include guard
@@ -208,36 +210,65 @@ extern void tinyobj_materials_free(Tinyobj_material *materials,
 #endif
 
 #ifndef TINYOBJ_MALLOC
+
 #include <stdlib.h>
+
+/** Default memory allocation functions */
+
+/** alias para o malloc */
 #define TINYOBJ_MALLOC malloc
+/** alias para o realloc */
 #define TINYOBJ_REALLOC realloc
+/** alias para o calloc */
 #define TINYOBJ_CALLOC calloc
+/** alias para o free */
 #define TINYOBJ_FREE free
 #endif
 
 #ifndef TINYOBJ_REALLOC_SIZED
-#define TINYOBJ_REALLOC_SIZED(p,oldsz,newsz) TINYOBJ_REALLOC(p,newsz)
+/** alias para o realloc com tamanho */
+#define TINYOBJ_REALLOC_SIZED(p, oldsz, newsz) TINYOBJ_REALLOC(p,newsz)
 #endif
 
+/** Maximo de faces por linha 'f' */
 #define TINYOBJ_MAX_FACES_PER_F_LINE (16)
+/** Maximo comprimento do caminho do arquivo */
 #define TINYOBJ_MAX_FILEPATH (8192)
 
+/** Verifica se o caractere é um espaço */
 #define IS_SPACE(x) (((x) == ' ') || ((x) == '\t'))
+/** Verifica se o caractere é um dígito */
 #define IS_DIGIT(x) ((unsigned int)((x) - '0') < (unsigned int)(10))
+/** Verifica se o caractere é uma nova linha */
 #define IS_NEW_LINE(x) (((x) == '\r') || ((x) == '\n') || ((x) == '\0'))
 
+/** Skip spaces in a token 
+ *  @param token Ponteiro para o ponteiro de string a ser processado. 
+ *  @note O ponteiro apontado por `token` será avançado 
+ *  para pular os espaços iniciais.
+*/
 static void skip_space(const char **token) {
   while ((*token)[0] == ' ' || (*token)[0] == '\t') {
     (*token)++;
   }
 }
 
+/** Skip spaces and carriage returns in a token 
+ *  @param token Ponteiro para o ponteiro de string a ser processado. 
+ *  @note O ponteiro apontado por `token` será avançado 
+ *  para pular os espaços iniciais e retornos de carro.
+*/
 static void skip_space_and_cr(const char **token) {
   while ((*token)[0] == ' ' || (*token)[0] == '\t' || (*token)[0] == '\r') {
     (*token)++;
   }
 }
 
+/** Skip until the end of the line 
+ *  @param token Ponteiro para o ponteiro de string a ser processado. 
+ *  @note O ponteiro apontado por `token` será avançado 
+ *  para pular até o final da linha.
+*/
 static int until_space(const char *token) {
   const char *p = token;
   while (p[0] != '\0' && p[0] != ' ' && p[0] != '\t' && p[0] != '\r') {
@@ -247,6 +278,11 @@ static int until_space(const char *token) {
   return (int)(p - token);
 }
 
+/** Calculate the length of a token until a newline character
+ *  @param token Ponteiro para a string a ser processada.
+ *  @param n Tamanho da string `token`.
+ *  @return Comprimento da string até o próximo caractere de nova linha.
+*/
 static size_t length_until_newline(const char *token, size_t n) {
   size_t len = 0;
 
@@ -268,6 +304,11 @@ static size_t length_until_newline(const char *token, size_t n) {
   return len;
 }
 
+/** Calculate the length of a token until a line feed character
+ *  @param token Ponteiro para a string a ser processada.
+ *  @param n Tamanho da string `token`.
+ *  @return Comprimento da string até o próximo caractere de line feed.
+*/
 static size_t length_until_line_feed(const char *token, size_t n) {
   size_t len = 0;
 
@@ -281,8 +322,11 @@ static size_t length_until_line_feed(const char *token, size_t n) {
   return len;
 }
 
-/* http://stackoverflow.com/questions/5710091/how-does-atoi-function-in-c-work
-*/
+/** Convert a string to an integer
+ *  @param c Ponteiro para a string a ser convertida.
+ *  @return Valor inteiro convertido.
+ *  @note Esta função é baseada em http://stackoverflow.com/questions/5710091/how-does-atoi-function-in-c-work
+ */
 static int my_atoi(const char *c) {
   int value = 0;
   int sign = 1;
@@ -298,14 +342,22 @@ static int my_atoi(const char *c) {
   return value * sign;
 }
 
-/* Make index zero-base, and also support relative index. */
+/** Make index zero-base, and also support relative index.
+ *  @param idx Índice a ser ajustado.
+ *  @param n Tamanho do array.
+ *  @return Índice ajustado.
+ */
 static int fixIndex(int idx, size_t n) {
   if (idx > 0) return idx - 1;
   if (idx == 0) return 0;
   return (int)n + idx; /* negative value = relative */
 }
 
-/* Parse raw triples: i, i/j/k, i//k, i/j */
+/** Parse a raw triple string (e.g., "1/2/3") into a Tinyobj_vertex_index structure
+ *  @param token Ponteiro para o ponteiro de string a ser processado. 
+ *  @return Estrutura Tinyobj_vertex_index contendo os índices de vértice, coordenada de textura e normal.
+ *  @note O ponteiro apontado por `token` será avançado para o próximo caractere após o triple.
+ */
 static Tinyobj_vertex_index parseRawTriple(const char **token) {
   Tinyobj_vertex_index vi;
   /* 0x80000000 = -2147483648 = invalid */
@@ -354,6 +406,11 @@ static Tinyobj_vertex_index parseRawTriple(const char **token) {
   return vi;
 }
 
+/** Parse an integer from a token
+ *  @param token Ponteiro para o ponteiro de string a ser processado.
+ *  @return Valor inteiro convertido.
+ *  @note O ponteiro apontado por `token` será avançado para o próximo caractere após o inteiro.
+ */
 static int parseInt(const char **token) {
   int i = 0;
   skip_space(token);
@@ -362,33 +419,12 @@ static int parseInt(const char **token) {
   return i;
 }
 
-/*
- * Tries to parse a floating point number located at s.
- *
- * s_end should be a location in the string where reading should absolutely
- * stop. For example at the end of the string, to prevent buffer overflows.
- *
- * Parses the following EBNF grammar:
- *   sign    = "+" | "-" ;
- *   END     = ? anything not in digit ?
- *   digit   = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
- *   integer = [sign] , digit , {digit} ;
- *   decimal = integer , ["." , integer] ;
- *   float   = ( decimal , END ) | ( decimal , ("E" | "e") , integer , END ) ;
- *
- *  Valid strings are for example:
- *   -0  +3.1417e+2  -0.0E-3  1.0324  -1.41   11e2
- *
- * If the parsing is a success, result is set to the parsed value and true
- * is returned.
- *
- * The function is greedy and will parse until any of the following happens:
- *  - a non-conforming character is encountered.
- *  - s_end is reached.
- *
- * The following situations triggers a failure:
- *  - s >= s_end.
- *  - parse failure.
+/** Parse a double from a token
+ *  @param s Ponteiro para o ponteiro de string a ser processado.
+ *  @param s_end Ponteiro para o final da string a ser processada, usado para evitar leitura além do limite.
+ *  @param result Ponteiro para a variável onde o valor double convertido será armazenado.
+ *  @return Valor double convertido.
+ *  @note O ponteiro apontado por `s` será avançado para o próximo caractere após o double.
  */
 static int tryParseDouble(const char *s, const char *s_end, double *result) {
   double mantissa = 0.0;
@@ -526,6 +562,11 @@ fail:
   return 0;
 }
 
+/** Parse a float from a token
+ *  @param token Ponteiro para o ponteiro de string a ser processado.
+ *  @return Valor float convertido.
+ *  @note O ponteiro apontado por `token` será avançado para o próximo caractere após o float.
+ */
 static float parseFloat(const char **token) {
   const char *end;
   double val = 0.0;
@@ -539,22 +580,46 @@ static float parseFloat(const char **token) {
   return f;
 }
 
+/** Parse two floats from a token
+ *  @param x Ponteiro para a variável onde o primeiro float convertido será armazenado.
+ *  @param y Ponteiro para a variável onde o segundo float convertido será armazenado.
+ *  @param token Ponteiro para o ponteiro de string a ser processado.
+ *  @note O ponteiro apontado por `token` será avançado para o próximo caractere após os dois floats.
+ */
 static void parseFloat2(float *x, float *y, const char **token) {
   (*x) = parseFloat(token);
   (*y) = parseFloat(token);
 }
 
+/** Parse three floats from a token
+ *  @param x Ponteiro para a variável onde o primeiro float convertido será armazenado.
+ *  @param y Ponteiro para a variável onde o segundo float convertido será armazenado.
+ *  @param z Ponteiro para a variável onde o terceiro float convertido será armazenado.
+ *  @param token Ponteiro para o ponteiro de string a ser processado.
+ *  @note O ponteiro apontado por `token` será avançado para o próximo caractere após os três floats.
+ */
 static void parseFloat3(float *x, float *y, float *z, const char **token) {
   (*x) = parseFloat(token);
   (*y) = parseFloat(token);
   (*z) = parseFloat(token);
 }
 
+/** Calculate the length of a string up to a maximum length, stopping at the first null terminator
+ *  @param s Ponteiro para a string a ser processada.
+ *  @param n Tamanho máximo da string a ser processada.
+ *  @return Comprimento da string até o primeiro null terminator ou até `n`, o que ocorrer primeiro.
+*/
 static size_t my_strnlen(const char *s, size_t n) {
     const char *p = (char *)memchr(s, 0, n);
     return p ? (size_t)(p - s) : n;
 }
 
+/** Duplicate a string up to a maximum length, trimming line endings
+ *  @param s Ponteiro para a string a ser duplicada.
+ *  @param max_length Tamanho máximo da string a ser duplicada.
+ *  @return Ponteiro para a nova string duplicada, ou NULL em caso de erro.
+ *  @note O ponteiro retornado deve ser liberado usando TINYOBJ_FREE quando não for mais necessário.
+*/
 static char *my_strdup(const char *s, size_t max_length) {
   char *d;
   size_t len;
@@ -573,6 +638,12 @@ static char *my_strdup(const char *s, size_t max_length) {
   return d;
 }
 
+/** Duplicate a string up to a maximum length, trimming line endings
+ *  @param s Ponteiro para a string a ser duplicada.
+ *  @param max_length Tamanho máximo da string a ser duplicada.
+ *  @return Ponteiro para a nova string duplicada, ou NULL em caso de erro.
+ *  @note O ponteiro retornado deve ser liberado usando TINYOBJ_FREE quando não for mais necessário.
+*/
 static char *my_strndup(const char *s, size_t len) {
   char *d;
   size_t slen;
@@ -591,6 +662,13 @@ static char *my_strndup(const char *s, size_t len) {
   return d;
 }
 
+/** Read a line from a file, dynamically resizing the buffer as needed
+ *  @param buf Ponteiro para o buffer onde a linha lida será armazenada. O buffer será realocado conforme necessário.
+ *  @param size Ponteiro para o tamanho do buffer. O valor apontado por `size` será atualizado para refletir o novo tamanho do buffer após realocação.
+ *  @param file Ponteiro para o arquivo de onde a linha será lida.
+ *  @return Ponteiro para a linha lida, ou NULL em caso de erro ou se o final do arquivo for alcançado.
+ *  @note O ponteiro retornado é o mesmo que `*buf`, e deve ser liberado usando TINYOBJ_FREE quando não for mais necessário.
+*/
 static char *dynamic_fgets(char **buf, size_t *size, FILE *file) {
   char *offset;
   char *ret;
@@ -616,6 +694,10 @@ static char *dynamic_fgets(char **buf, size_t *size, FILE *file) {
   return ret;
 }
 
+/** Initialize a Tinyobj_material structure with default values
+ *  @param material Ponteiro para a estrutura `Tinyobj_material` a ser inicializada.
+ *  @note Esta função define os campos da estrutura `Tinyobj_material` para valores padrão, como NULL para strings e 0 ou 1 para os campos numéricos.
+*/
 static void initMaterial(Tinyobj_material *material) {
   int i;
   material->name = NULL;
@@ -641,31 +723,48 @@ static void initMaterial(Tinyobj_material *material) {
 
 /* Implementation of string to int hashtable */
 
+/** Error code indicating a hash table operation failed */
 #define HASH_TABLE_ERROR 1
+/** Success code indicating a hash table operation succeeded */
 #define HASH_TABLE_SUCCESS 0
 
+/** Default size for a hash table */
 #define HASH_TABLE_DEFAULT_SIZE 10
 
-typedef struct hash_table_entry_t
-{
-  unsigned long hash;
-  int filled;
-  int pad0;
-  long value;
+/** Estrutura de entrada da tabela hash 
+ *  @param hash Valor hash da chave
+ *  @param filled Indica se a entrada está preenchida (1) ou vazia (0)
+ *  @param pad0 Padding para alinhamento de 4 bytes
+ *  @param value Valor associado à chave hash
+ *  @param next Ponteiro para a próxima entrada na cadeia de colisão (usado para lidar com colisões de hash)
+*/
+typedef struct HASH_TABLE_ENTRY {
+  unsigned long hash; // Valor hash da chave
+  int filled;         // Indica se a entrada está preenchida (1) ou vazia (0)
+  int pad0;           // Padding para alinhamento de 4 bytes
+  long value;         // Valor associado à chave hash
 
-  struct hash_table_entry_t* next;
-} hash_table_entry_t;
+  struct HASH_TABLE_ENTRY* next; // Ponteiro para a próxima entrada na cadeia de colisão (usado para lidar com colisões de hash)
+} HASH_TABLE_ENTRY;
 
-typedef struct
-{
-  unsigned long* hashes;
-  hash_table_entry_t* entries;
-  size_t capacity;
-  size_t n;
-} hash_table_t;
+/** Estrutura da tabela hash
+ *  @param hashes Array de valores hash
+ *  @param entries Array de entradas da tabela hash
+ *  @param capacity Capacidade da tabela hash
+ *  @param n Número de entradas na tabela hash
+*/
+typedef struct HASH_TABLE {
+  unsigned long* hashes;      // Array de valores hash
+  HASH_TABLE_ENTRY* entries;  // Array de entradas da tabela hash
+  size_t capacity;            // Capacidade da tabela hash
+  size_t n;                   // Número de entradas na tabela hash
+} HASH_TABLE;
 
-static unsigned long hash_djb2(const unsigned char* str)
-{
+/** Função de hash DJB2
+ *  @param str String de entrada
+ *  @return Valor hash calculado
+ */
+static unsigned long hash_djb2(const unsigned char* str) {
   unsigned long hash = 5381;
   int c;
 
@@ -676,34 +775,43 @@ static unsigned long hash_djb2(const unsigned char* str)
   return hash;
 }
 
-static void create_hash_table(size_t start_capacity, hash_table_t* hash_table)
-{
+/** Cria uma tabela hash
+ *  @param start_capacity Capacidade inicial da tabela hash
+ *  @param hash_table Ponteiro para a tabela hash a ser criada
+ */
+static void create_hash_table(size_t start_capacity, HASH_TABLE* hash_table) {
   if (start_capacity < 1)
     start_capacity = HASH_TABLE_DEFAULT_SIZE;
+
   hash_table->hashes = (unsigned long*) TINYOBJ_MALLOC(start_capacity * sizeof(unsigned long));
-  hash_table->entries = (hash_table_entry_t*) TINYOBJ_CALLOC(start_capacity, sizeof(hash_table_entry_t));
+  hash_table->entries = (HASH_TABLE_ENTRY*) TINYOBJ_CALLOC(start_capacity, sizeof(HASH_TABLE_ENTRY));
   hash_table->capacity = start_capacity;
   hash_table->n = 0;
 }
 
-static void destroy_hash_table(hash_table_t* hash_table)
-{
+/** Destroi uma tabela hash
+ *  @param hash_table Ponteiro para a tabela hash a ser destruída
+ */
+static void destroy_hash_table(HASH_TABLE* hash_table) {
   TINYOBJ_FREE(hash_table->entries);
   TINYOBJ_FREE(hash_table->hashes);
 }
 
-/* Insert with quadratic probing */
-static int hash_table_insert_value(unsigned long hash, long value, hash_table_t* hash_table)
-{
+/** Insere um valor na tabela hash
+ *  @param hash Valor hash da chave
+ *  @param value Valor a ser inserido
+ *  @param hash_table Ponteiro para a tabela hash
+ *  @return Código de sucesso ou erro
+ */
+static int hash_table_insert_value(unsigned long hash, long value, HASH_TABLE* hash_table) {
   /* Insert value */
   size_t start_index = hash % hash_table->capacity;
   size_t index = start_index;
-  hash_table_entry_t* start_entry = hash_table->entries + start_index;
+  HASH_TABLE_ENTRY* start_entry = hash_table->entries + start_index;
   size_t i;
-  hash_table_entry_t* entry;
+  HASH_TABLE_ENTRY* entry;
 
-  for (i = 1; hash_table->entries[index].filled; i++)
-  {
+  for (i = 1; hash_table->entries[index].filled; i++) {
     if (i >= hash_table->capacity)
       return HASH_TABLE_ERROR;
     index = (start_index + (i * i)) % hash_table->capacity;
@@ -723,24 +831,32 @@ static int hash_table_insert_value(unsigned long hash, long value, hash_table_t*
   return HASH_TABLE_SUCCESS;
 }
 
-static int hash_table_insert(unsigned long hash, long value, hash_table_t* hash_table)
-{
+/** Insere um valor na tabela hash
+ *  @param hash Valor hash da chave
+ *  @param value Valor a ser inserido
+ *  @param hash_table Ponteiro para a tabela hash
+ *  @return Código de sucesso ou erro
+ */
+static int hash_table_insert(unsigned long hash, long value, HASH_TABLE* hash_table) {
   int ret = hash_table_insert_value(hash, value, hash_table);
-  if (ret == HASH_TABLE_SUCCESS)
-  {
+
+  if (ret == HASH_TABLE_SUCCESS) {
     hash_table->hashes[hash_table->n] = hash;
     hash_table->n++;
   }
   return ret;
 }
 
-static hash_table_entry_t* hash_table_find(unsigned long hash, hash_table_t* hash_table)
-{
-  hash_table_entry_t* entry = hash_table->entries + (hash % hash_table->capacity);
-  while (entry)
-  {
-    if (entry->hash == hash && entry->filled)
-    {
+/** Encontra uma entrada na tabela hash
+ *  @param hash Valor hash da chave
+ *  @param hash_table Ponteiro para a tabela hash
+ *  @return Ponteiro para a entrada encontrada ou NULL se não encontrada
+ */
+static HASH_TABLE_ENTRY* hash_table_find(unsigned long hash, HASH_TABLE* hash_table) {
+  HASH_TABLE_ENTRY* entry = hash_table->entries + (hash % hash_table->capacity);
+
+  while (entry) {
+    if (entry->hash == hash && entry->filled) {
       return entry;
     }
     entry = entry->next;
@@ -748,24 +864,27 @@ static hash_table_entry_t* hash_table_find(unsigned long hash, hash_table_t* has
   return NULL;
 }
 
-static void hash_table_grow(hash_table_t* hash_table)
-{
-  size_t new_capacity;
-  hash_table_t new_hash_table;
-  size_t i;
+/** Cresce a tabela hash
+ *  @param hash_table Ponteiro para a tabela hash a ser crescida
+ */
+static void hash_table_grow(HASH_TABLE* hash_table) {
+  size_t new_capacity;        // Nova capacidade da tabela hash
+  HASH_TABLE new_hash_table;  // Nova tabela hash para armazenar os dados rehashados
+  size_t i;                   // Índice para iterar sobre as entradas da tabela hash
 
   new_capacity = 2 * hash_table->capacity;
+
   /* Create a new hash table. We're not calling create_hash_table because we want to realloc the hash array */
   new_hash_table.hashes = hash_table->hashes = (unsigned long*) TINYOBJ_REALLOC_SIZED(
       (void*) hash_table->hashes, sizeof(unsigned long) * hash_table->capacity, sizeof(unsigned long) * new_capacity);
-  new_hash_table.entries = (hash_table_entry_t*) TINYOBJ_CALLOC(new_capacity, sizeof(hash_table_entry_t));
+
+  new_hash_table.entries = (HASH_TABLE_ENTRY*) TINYOBJ_CALLOC(new_capacity, sizeof(HASH_TABLE_ENTRY));
   new_hash_table.capacity = new_capacity;
   new_hash_table.n = hash_table->n;
 
   /* Rehash */
-  for (i = 0; i < hash_table->capacity; i++)
-  {
-    hash_table_entry_t* entry = &hash_table->entries[i];
+  for (i = 0; i < hash_table->capacity; i++) {
+    HASH_TABLE_ENTRY* entry = &hash_table->entries[i];
     if (entry->filled) {
             hash_table_insert_value(entry->hash, entry->value, &new_hash_table);
     }
@@ -775,19 +894,26 @@ static void hash_table_grow(hash_table_t* hash_table)
   (*hash_table) = new_hash_table;
 }
 
-static int hash_table_exists(const char* name, hash_table_t* hash_table)
-{
+/** Verifica se uma chave existe na tabela hash
+ *  @param name Nome da chave a ser verificada
+ *  @param hash_table Ponteiro para a tabela hash
+ *  @return 1 se a chave existir, 0 caso contrário
+ */
+static int hash_table_exists(const char* name, HASH_TABLE* hash_table) {
   return hash_table_find(hash_djb2((const unsigned char*)name), hash_table) != NULL;
 }
 
-static void hash_table_set(const char* name, size_t val, hash_table_t* hash_table)
-{
+/** Define um valor para uma chave na tabela hash
+ *  @param name Nome da chave a ser definida
+ *  @param val Valor a ser associado à chave
+ *  @param hash_table Ponteiro para a tabela hash
+ */
+static void hash_table_set(const char* name, size_t val, HASH_TABLE* hash_table) {
   /* Hash name */
   unsigned long hash = hash_djb2((const unsigned char *)name);
 
-  hash_table_entry_t* entry = hash_table_find(hash, hash_table);
-  if (entry)
-  {
+  HASH_TABLE_ENTRY* entry = hash_table_find(hash, hash_table);
+  if (entry) {
     entry->value = (long)val;
     return;
   }
@@ -800,12 +926,22 @@ static void hash_table_set(const char* name, size_t val, hash_table_t* hash_tabl
   }
 }
 
-static long hash_table_get(const char* name, hash_table_t* hash_table)
-{
-  hash_table_entry_t* ret = hash_table_find(hash_djb2((const unsigned char*)(name)), hash_table);
+/** Obtém o valor associado a uma chave na tabela hash
+ *  @param name Nome da chave a ser obtida
+ *  @param hash_table Ponteiro para a tabela hash
+ *  @return Valor associado à chave, ou 0 se a chave não existir
+ */
+static long hash_table_get(const char* name, HASH_TABLE* hash_table) {
+  HASH_TABLE_ENTRY* ret = hash_table_find(hash_djb2((const unsigned char*)(name)), hash_table);
   return ret->value;
 }
 
+/** Adiciona um novo material à lista de materiais
+ *  @param prev Ponteiro para a lista de materiais existente
+ *  @param num_materials Número de materiais existentes
+ *  @param new_mat Ponteiro para o novo material a ser adicionado
+ *  @return Ponteiro para a lista de materiais atualizada
+ */
 static Tinyobj_material *Tinyobj_material_add(Tinyobj_material *prev,
                                                 size_t num_materials,
                                                 Tinyobj_material *new_mat) {
@@ -818,6 +954,12 @@ static Tinyobj_material *Tinyobj_material_add(Tinyobj_material *prev,
   return dst;
 }
 
+/** Verifica se o caractere na posição `i` na string `p` é um caractere de final de linha, considerando o índice final `end_i` para evitar acesso fora dos limites.
+ *  @param p Ponteiro para a string a ser verificada.
+ *  @param i Índice do caractere a ser verificado.
+ *  @param end_i Índice do final da string para evitar acesso fora dos limites.
+ *  @return 1 se o caractere for um terminador de linha, 0 caso contrário.
+ */
 static int is_line_ending(const char *p, size_t i, size_t end_i) {
   if (p[i] == '\0') return 1;
   if (p[i] == '\n') return 1; /* this includes \r\n */
@@ -829,14 +971,24 @@ static int is_line_ending(const char *p, size_t i, size_t end_i) {
   return 0;
 }
 
-typedef struct {
-  size_t pos;
-  size_t len;
-} LineInfo;
+/** Estrutura para armazenar informações de linha, incluindo a posição inicial e o comprimento da linha.
+ *  @param pos Posição inicial da linha no buffer.
+ *  @param len Comprimento da linha.
+*/
+typedef struct LINE_INFO {
+  size_t pos;   // Posição inicial da linha no buffer
+  size_t len;   // Comprimento da linha
+} LINE_INFO;
 
-/* Find '\n' and create line data. */
-static int get_line_infos(const char *buf, size_t buf_len, LineInfo **line_infos, size_t *num_lines)
-{
+/** Analisa um buffer de texto para extrair informações sobre as linhas, incluindo a posição inicial e o comprimento de cada linha.
+ *  @param buf Ponteiro para o buffer de texto a ser analisado.
+ *  @param buf_len Tamanho do buffer de texto.
+ *  @param line_infos Ponteiro para um array de LINE_INFO onde as informações das linhas serão armazenadas. O array será alocado dinamicamente dentro da função.
+ *  @param num_lines Ponteiro para uma variável onde o número de linhas encontradas será armazenado.
+ *  @return Código de erro indicando o resultado da operação (0 para sucesso, TINYOBJ_ERROR_EMPTY se o buffer estiver vazio, ou outro código de erro em caso de falha).
+ *  @note O array `line_infos` deve ser liberado usando TINYOBJ_FREE quando não for mais necessário.
+*/
+static int get_line_infos(const char *buf, size_t buf_len, LINE_INFO **line_infos, size_t *num_lines) {
   size_t i = 0;
   size_t end_idx = buf_len;
   size_t prev_pos = 0;
@@ -860,7 +1012,7 @@ static int get_line_infos(const char *buf, size_t buf_len, LineInfo **line_infos
 
   if (*num_lines == 0) return TINYOBJ_ERROR_EMPTY;
 
-  *line_infos = (LineInfo *)TINYOBJ_MALLOC(sizeof(LineInfo) * (*num_lines));
+  *line_infos = (LINE_INFO *)TINYOBJ_MALLOC(sizeof(LINE_INFO) * (*num_lines));
 
   /* Fill line infos. */
   for (i = 0; i < end_idx; i++) {
@@ -879,17 +1031,28 @@ static int get_line_infos(const char *buf, size_t buf_len, LineInfo **line_infos
   return 0;
 }
 
+/** Carrega um arquivo MTL e indexa os materiais encontrados, armazenando-os em uma tabela hash para acesso rápido.
+ *  @param materials_out Ponteiro para um array de Tinyobj_material onde os materiais carregados serão armazenados. O array será alocado dinamicamente dentro da função.
+ *  @param num_materials_out Ponteiro para uma variável onde o número de materiais carregados será armazenado.
+ *  @param mtl_filename Nome do arquivo MTL a ser carregado.
+ *  @param obj_filename Nome do arquivo OBJ associado ao MTL, usado para resolver caminhos relativos.
+ *  @param file_reader Função de callback para ler arquivos, que deve ser fornecida pelo usuário.
+ *  @param ctx Contexto a ser passado para a função de leitura de arquivos.
+ *  @param material_table Ponteiro para uma tabela hash onde os materiais serão indexados por nome.
+ *  @return Código de erro indicando o resultado da operação (0 para sucesso, ou outro código de erro em caso de falha).
+ *  @note O array `materials_out` deve ser liberado usando TINYOBJ_FREE quando não for mais necessário. Os materiais individuais dentro do array também devem ser liberados conforme necessário.
+*/
 static int tinyobj_load_and_index_mtl_file(Tinyobj_material **materials_out,
                                             size_t *num_materials_out,
                                             const char *mtl_filename, const char *obj_filename, File_reader_callback file_reader, void *ctx,
-                                            hash_table_t* material_table) {
+                                            HASH_TABLE* material_table) {
   Tinyobj_material material;
   size_t num_materials = 0;
   Tinyobj_material *materials = NULL;
   int has_previous_material = 0;
   const char *line_end = NULL;
   size_t num_lines = 0;
-  LineInfo *line_infos = NULL;
+  LINE_INFO *line_infos = NULL;
   size_t i = 0;
   char *buf = NULL;
   size_t len = 0;
@@ -1132,6 +1295,16 @@ static int tinyobj_load_and_index_mtl_file(Tinyobj_material **materials_out,
   return TINYOBJ_SUCCESS;
 }
 
+/** Carrega um arquivo MTL e indexa os materiais encontrados, armazenando-os em uma tabela hash para acesso rápido.
+ *  @param materials_out Ponteiro para um array de Tinyobj_material onde os materiais carregados serão armazenados. O array será alocado dinamicamente dentro da função.
+ *  @param num_materials_out Ponteiro para uma variável onde o número de materiais carregados será armazenado.
+ *  @param mtl_filename Nome do arquivo MTL a ser carregado.
+ *  @param obj_filename Nome do arquivo OBJ associado ao MTL, usado para resolver caminhos relativos.
+ *  @param file_reader Função de callback para ler arquivos, que deve ser fornecida pelo usuário.
+ *  @param ctx Contexto a ser passado para a função de leitura de arquivos.
+ *  @return Código de erro indicando o resultado da operação (0 para sucesso, ou outro código de erro em caso de falha).
+ *  @note O array `materials_out` deve ser liberado usando TINYOBJ_FREE quando não for mais necessário. Os materiais individuais dentro do array também devem ser liberados conforme necessário.
+*/
 int tinyobj_load_mtl(Tinyobj_material **materials_out,
                            size_t *num_materials_out,
                            const char *mtl_filename, const char *obj_filename, File_reader_callback file_reader,
@@ -1139,51 +1312,59 @@ int tinyobj_load_mtl(Tinyobj_material **materials_out,
   return tinyobj_load_and_index_mtl_file(materials_out, num_materials_out, mtl_filename, obj_filename, file_reader, ctx, NULL);
 }
 
+/** Command types para representar os diferentes tipos de comandos em um arquivo OBJ */
+typedef enum COMAND_TYPE {
+  COMMAND_EMPTY,    // Linha vazia ou comentário
+  COMMAND_V,        // Vertex
+  COMMAND_VN,       // Normal
+  COMMAND_VT,       // Texture coordinate
+  COMMAND_F,        // Face
+  COMMAND_G,        // Group name
+  COMMAND_O,        // Object name
+  COMMAND_USEMTL,   // Use material
+  COMMAND_MTLLIB    // Material library 
+} COMAND_TYPE;
 
-typedef enum {
-  COMMAND_EMPTY,
-  COMMAND_V,
-  COMMAND_VN,
-  COMMAND_VT,
-  COMMAND_F,
-  COMMAND_G,
-  COMMAND_O,
-  COMMAND_USEMTL,
-  COMMAND_MTLLIB
-
-} CommandType;
-
-typedef struct {
-  float vx, vy, vz;
-  float nx, ny, nz;
-  float tx, ty;
+/** Estrutura para representar um comando em um arquivo OBJ */
+typedef struct COMAND {
+  float vx, vy, vz;   // Coordenadas do vértice
+  float nx, ny, nz;   // Coordenadas da normal
+  float tx, ty;       // Coordenadas da textura
 
   /* @todo { Use dynamic array } */
   Tinyobj_vertex_index f[TINYOBJ_MAX_FACES_PER_F_LINE];
-  size_t num_f;
+  size_t num_f;   // Número de vértices na face (para comandos de face)
 
   int f_num_verts[TINYOBJ_MAX_FACES_PER_F_LINE];
-  size_t num_f_num_verts;
+  size_t num_f_num_verts;   // Número de elementos em f_num_verts (para comandos de face)
 
-  const char *group_name;
-  unsigned int group_name_len;
-  int pad0;
+  const char *group_name;       // Nome do grupo
+  unsigned int group_name_len;  // Comprimento do nome do grupo
+  int pad0;                     // Padding para alinhamento de 4 bytes
 
-  const char *object_name;
-  unsigned int object_name_len;
-  int pad1;
+  const char *object_name;      // Nome do objeto
+  unsigned int object_name_len; // Comprimento do nome do objeto
+  int pad1;                     // Padding para alinhamento de 4 bytes
 
-  const char *material_name;
-  unsigned int material_name_len;
-  int pad2;
+  const char *material_name;      // Nome do material
+  unsigned int material_name_len; // Comprimento do nome do material
+  int pad2;                       // Padding para alinhamento de 4 bytes
 
-  const char *mtllib_name;
-  unsigned int mtllib_name_len;
+  const char *mtllib_name;        // Nome do arquivo de biblioteca de materiais
+  unsigned int mtllib_name_len;   // Comprimento do nome do arquivo de biblioteca de materiais
+  int pad3;                       // Padding para alinhamento de 4 bytes
 
-  CommandType type;
-} Command;
+  COMAND_TYPE type; // Tipo do comando
+} COMAND;
 
-static int parseLine(Command *command, const char *p, size_t p_len,
+/** Analisa uma linha de um arquivo OBJ e preenche uma estrutura COMAND com as informações extraídas.
+ *  @param command Ponteiro para a estrutura COMAND onde as informações extraídas serão armazenadas.
+ *  @param p Ponteiro para a linha a ser analisada.
+ *  @param p_len Comprimento da linha a ser analisada.
+ *  @param triangulate Indica se as faces devem ser trianguladas (1 para sim, 0 para não).
+ *  @return 1 se a linha foi analisada com sucesso e um comando válido foi preenchido, ou 0 caso contrário.
+ */
+static int parseLine(COMAND *command, const char *p, size_t p_len,
                      int triangulate) {
   char linebuf[4096];
   const char *token;
@@ -1445,8 +1626,8 @@ int tinyobj_load_obj(Tinyobj_attrib *attrib, Tinyobj_shape **shapes,
                       size_t *num_materials_out, const char *obj_filename,
                       File_reader_callback file_reader, void *ctx,
                       unsigned int flags) {
-  LineInfo *line_infos = NULL;
-  Command *commands = NULL;
+  LINE_INFO *line_infos = NULL;
+  COMAND *commands = NULL;
   size_t num_lines = 0;
 
   size_t num_v = 0;
@@ -1460,7 +1641,7 @@ int tinyobj_load_obj(Tinyobj_attrib *attrib, Tinyobj_shape **shapes,
   Tinyobj_material *materials = NULL;
   size_t num_materials = 0;
 
-  hash_table_t material_table;
+  HASH_TABLE material_table;
 
   char *buf = NULL;
   size_t len = 0;
@@ -1474,18 +1655,18 @@ int tinyobj_load_obj(Tinyobj_attrib *attrib, Tinyobj_shape **shapes,
   if (materials_out == NULL) return TINYOBJ_ERROR_INVALID_PARAMETER;
   if (num_materials_out == NULL) return TINYOBJ_ERROR_INVALID_PARAMETER;
 
-  Tinyobj_attrib_init(attrib);
+  tinyobj_attrib_init(attrib);
 
   /* 1. create line data */
   if (get_line_infos(buf, len, &line_infos, &num_lines) != 0) {
     return TINYOBJ_ERROR_EMPTY;
   }
 
-  commands = (Command *)TINYOBJ_MALLOC(sizeof(Command) * num_lines);
+  commands = (COMAND *)TINYOBJ_MALLOC(sizeof(COMAND) * num_lines);
 
   create_hash_table(HASH_TABLE_DEFAULT_SIZE, &material_table);
 
-  /* 2. parse each line */
+  /* 2. parse each line */ 
   {
     size_t i = 0;
     for (i = 0; i < num_lines; i++) {

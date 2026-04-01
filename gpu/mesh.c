@@ -1,10 +1,10 @@
-#include "numa.h"
+//#include "null.h"
 
 #include "../include/mesh.h"
 
 Mesh *gfx_mesh_load(const char *path) {
     (void)path; // TODO: Implementar carregamento de malha a partir de arquivo
-    return NULL;
+    //return NULL;
 }
 
 void gfx_mesh_free(Mesh *m) {
