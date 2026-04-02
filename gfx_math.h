@@ -4,11 +4,11 @@
 
 /**
  * @file gfx_math.h
- * @brief Tipos matemáticos e estruturas básicas usadas pelo sistema gráfico.
+ * @brief Tipos matemáticos e estruturas básicas compartilhadas pelo sistema gráfico.
  */
 
-/** Framebuffer mapeado em memória do dispositivo 
- * @param pixels Ponteiro para os pixels mapeados (formato 0xAARRGGBB)
+/** Framebuffer RGBA compartilhado pelo caminho CPU e pelos previews em memória.
+ * @param pixels Ponteiro para os pixels mapeados (formato 0xRRGGBBAA)
  * @param fd File descriptor do framebuffer (usado para fechar o dispositivo)
  * @param width Largura do framebuffer em pixels
  * @param height Altura do framebuffer em pixels
@@ -55,50 +55,50 @@ typedef struct Mat4 { Vec4 col[4]; } Mat4; // Matriz de transformação 4x4
 /** min calcula o valor mínimo entre dois inteiros
  * @param a Primeiro valor
  * @param b Segundo valor
- * @return O valor mínimo entre a e b
+ * @return O menor valor entre a e b
 */
 int min(int a, int b);
 
 /** max calcula o valor máximo entre dois inteiros
  * @param a Primeiro valor
  * @param b Segundo valor
- * @return O valor máximo entre a e b
+ * @return O maior valor entre a e b
 */
 int max(int a, int b);
 
-/** fmiminf calcula o valor mínimo entre dois floats 
+/** fminf calcula o menor valor entre dois floats 
  * @param a Primeiro valor
  * @param b Segundo valor
- * @return O valor mínimo entre a e b
+ * @return O menor valor entre a e b
 */
 float fminf(float a, float b);
 
 /** fmaxf calcula o valor máximo entre dois floats
  * @param a Primeiro valor
  * @param b Segundo valor
- * @return O valor máximo entre a e b
+ * @return O maior valor entre a e b
 */
 float fmaxf(float a, float b);
 
 /** Component-wise minimum for Vec3
  * @param a Primeiro vetor
  * @param b Segundo vetor
- * @return Vetor cujos componentes são o mínimo entre `a` e `b`
+ * @return Vetor cujos componentes são o menor valor entre `a` e `b`
  */
 Vec3 vec3_min(Vec3 a, Vec3 b);
 
 /** Component-wise maximum for Vec3
  * @param a Primeiro vetor
  * @param b Segundo vetor
- * @return Vetor cujos componentes são o máximo entre `a` e `b`
+ * @return Vetor cujos componentes são o maior valor entre `a` e `b`
  */
 Vec3 vec3_max(Vec3 a, Vec3 b);
 
 /** Clamp cada componente de `v` entre `lo` e `hi` 
- * @param v Vetor a ser clamped
+ * @param v Vetor a ser limitado
  * @param lo Valor mínimo para cada componente
  * @param hi Valor máximo para cada componente
- * @return Vetor resultante do clamp de `v`
+ * @return Vetor resultante da limitação de `v`
 */
 Vec3 vec3_clamp(Vec3 v, float lo, float hi);
 

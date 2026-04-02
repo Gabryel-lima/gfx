@@ -373,6 +373,10 @@ int main(int argc, char **argv) {
     /** @todo Facilitar a inicialização com novos prototipos para a api, 
      *  e criar as funções que faltam, pois estão muito complexas de usar, 
      *  e isso é só um exemplo de como usar a API, não deveria ser tão verboso. 
+     *  @todo Tmabém criar um script, talvez em ruby para visualizar por animação
+     *  os blocos de memória alocados e liberados, para facilitar o entendimento de como usar a API,
+     *  e também para ajudar a identificar possíveis vazamentos de memória, 
+     *  ou usos incorretos dos ponteiros, como acessar um ponteiro após liberar a memória, ou esquecer de liberar a
      */
 
     char executable_path[PATH_MAX];

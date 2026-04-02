@@ -2,20 +2,20 @@
 
 /**
  * @file include/gl_loader.h
- * @brief Carregador de funções OpenGL dinâmicas (procs) utilizado pelo projeto.
+ * @brief Carregador mínimo de símbolos OpenGL via dlopen/dlsym.
  */
 
-/** OpenGL enum type */
+/** Tipo para enums OpenGL */
 typedef unsigned int  GLenum; // Tipo para enums do OpenGL
-/** OpenGL uint object handle */
+/** Tipo para identificadores de objetos OpenGL */
 typedef unsigned int  GLuint; // Tipo para identificadores de objetos OpenGL
-/** OpenGL int type */
+/** Tipo inteiro usado por chamadas OpenGL */
 typedef int           GLint;  // Tipo inteiro usado por chamadas OpenGL
-/** OpenGL float type */
+/** Tipo float usado por OpenGL */
 typedef float         GLfloat; // Tipo float usado por OpenGL
-/** OpenGL char type for source strings */
+/** Tipo char usado em strings GLSL */
 typedef char          GLchar; // Tipo char usado em strings GLSL
-/** Pointer-sized integer for buffer sizes */
+/** Tipo inteiro para tamanhos e offsets de buffer */
 typedef signed long   GLsizeiptr; // Tipo para tamanhos/offsets de buffer
 
 /** Ponteiros para funções OpenGL carregadas dinamicamente */
@@ -25,7 +25,7 @@ typedef void  (*PFN_glBufferData)    (GLenum, GLsizeiptr, const void*, GLenum); 
 typedef GLuint(*PFN_glCreateShader)  (GLenum);                                 // Cria shader
 
 /**
- * Estrutura com funções carregadas do OpenGL.
+ * Tabela com funções OpenGL carregadas dinamicamente.
  * @param handle Handle da biblioteca dinâmica (usado para dlclose)
  * @param GenBuffers Ponteiro para função glGenBuffers
  * @param BindBuffer Ponteiro para função glBindBuffer
@@ -42,7 +42,7 @@ typedef struct GLProcs {
 } GLProcs;
 
 /**
- * Carrega as funções OpenGL necessárias e retorna uma tabela de ponteiros.
+ * Carrega o subconjunto de símbolos OpenGL usado pelo projeto.
  * @return GLProcs preenchido com os ponteiros disponíveis.
  */
 GLProcs gl_load(void);

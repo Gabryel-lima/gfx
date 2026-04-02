@@ -2,7 +2,7 @@
 
 /**
  * @file include/x11_platform.h
- * @brief Tipos e wrappers mínimos para interação com X11 e GLX.
+ * @brief Wrappers mínimos para X11 e GLX carregados dinamicamente.
  */
 
 /** Tipo para identificadores X (XID) */
@@ -24,7 +24,7 @@ typedef Window   (*PFN_XCreateSimpleWindow)(Display*, Window, int, int,
 typedef void*    (*PFN_glXCreateContext) (Display*, void*, void*, int); // Cria contexto GLX
 typedef void     (*PFN_glXMakeCurrent)   (Display*, GLXDrawable, void*); // Faz contexto atual
 
-/** Estrutura com ponteiros para funções X11/GLX e handles 
+/** Tabela com ponteiros e handles para X11/GLX.
  * @param x11 Handle para biblioteca X11 (usado para dlclose)
  * @param gl Handle para biblioteca GL/GLX (usado para dlclose)
  * @param XOpenDisplay Ponteiro para função XOpenDisplay
@@ -41,5 +41,5 @@ typedef struct PlatformGL {
     PFN_glXMakeCurrent       glXMakeCurrent;      /**< Ponteiro para glXMakeCurrent */
 } PlatformGL; // Abstração mínima da plataforma para GL
 
-/** Inicializa a abstração PlatformGL carregando funções necessárias. */
+/** Carrega X11 e GL/GLX e preenche PlatformGL. */
 PlatformGL platform_gl_init(void);

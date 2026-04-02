@@ -4,38 +4,30 @@
 
 /**
  * @file gfx.h
- * @brief Interface gráfica de alto nível (API pública) para desenho de malhas.
+ * @brief Fachada pública e dispatcher dos backends gráficos.
  */
 
-/** Encaminhamento (forward) para `Mesh` */
-typedef struct Mesh Mesh; // Estrutura que representa uma malha 3D
-/** Encaminhamento (forward) para `Material` */
-typedef struct Material Material; // Estrutura que descreve material/atributos de render
+/** Tipo opaco para uma malha 3D. */
+typedef struct Mesh Mesh;
+/** Tipo opaco para um material de render. */
+typedef struct Material Material;
 
-/** Backend gráfico: conjunto de funções que um backend deve implementar 
- * @param begin_frame Função para iniciar um frame de renderização
- * @param end_frame Função para finalizar um frame de renderização
- * @param draw_mesh Função para desenhar uma malha com transformação e material
- * @param set_camera Função para configurar a câmera (posição, alvo, FOV)
-*/
+/** Tabela de callbacks implementada por um backend gráfico. */
 typedef struct GfxBackend {
-    void (*begin_frame)(void *ctx);                        /**< Inicia frame */
-    void (*end_frame)  (void *ctx);                        /**< Finaliza frame */
+    void (*begin_frame)(void *ctx);                        /**< Inicia um frame */
+    void (*end_frame)  (void *ctx);                        /**< Finaliza um frame */
     void (*draw_mesh)  (void *ctx, Mesh *m, Mat4 transform, Material *mat); /**< Desenha uma malha */
-    void (*set_camera) (void *ctx, Vec3 pos, Vec3 target, float fov);       /**< Configura câmera */
+    void (*set_camera) (void *ctx, Vec3 pos, Vec3 target, float fov);       /**< Configura a câmera */
 } GfxBackend;
 
-/** Contexto gráfico principal 
- * @param backend Backend gráfico a ser usado (CPU/GPU)
- * @param backend_ctx Contexto específico do backend (CPUCtx ou GPUCtx)
-*/
+/** Contexto opaco que guarda o backend ativo e seu estado específico. */
 typedef struct GfxContext {
-    GfxBackend backend;      /**< Implementação de backend (CPU/GPU) */
-    void       *backend_ctx; /**< Contexto específico do backend (CPUCtx ou GPUCtx) */
+    GfxBackend backend;      /**< Implementação do backend ativo */
+    void       *backend_ctx; /**< Estado interno do backend ativo */
 } GfxContext;
 
 /**
- * Desenha uma malha usando o contexto gráfico.
+ * Desenha uma malha usando o backend ativo.
  * @param g Ponteiro para GfxContext
  * @param m Ponteiro para Mesh a ser desenhada
  * @param t Matriz de transformação (transform)
@@ -44,7 +36,7 @@ typedef struct GfxContext {
 void gfx_draw_mesh(GfxContext *g, Mesh *m, Mat4 t, Material *mat);
 
 /**
- * Configura a câmera do contexto gráfico.
+ * Atualiza a câmera do backend ativo.
  * @param g Ponteiro para GfxContext
  * @param pos Posição da câmera
  * @param target Alvo da câmera
@@ -52,20 +44,20 @@ void gfx_draw_mesh(GfxContext *g, Mesh *m, Mat4 t, Material *mat);
  */
 void gfx_set_camera(GfxContext *g, Vec3 pos, Vec3 target, float fov);
 
-/** Inicia um frame de renderização.
+/** Inicia um frame no backend ativo.
  * @param g Ponteiro para GfxContext
  */
 void gfx_begin_frame(GfxContext *g);
 
-/** Finaliza um frame de renderização.
+/** Finaliza um frame no backend ativo.
  * @param g Ponteiro para GfxContext
  */
 void gfx_end_frame(GfxContext *g);
 
-/** Limpa os recursos do contexto gráfico.
+/** Libera recursos associados ao contexto gráfico, quando houver.
  * @param g Ponteiro para GfxContext
  */
 void gfx_cleanup(GfxContext *g);
 
-/** Retorna um backend de stub usado nos exemplos */
+/** Retorna o backend stub usado pelos exemplos e smoke tests. */
 GfxBackend gfx_get_stub_backend(void);

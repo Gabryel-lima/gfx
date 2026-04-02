@@ -1,8 +1,8 @@
 #pragma once
 
 /**
- * @file tiny_loader.h
- * @brief Interface pública do tinyobjloader, um carregador de arquivos .obj e .mtl.
+ * @file include/tinyobj_loader.h
+ * @brief Parser OBJ/MTL em formato header-only; a implementação é habilitada por src/tinyobj_loader.c.
  * @author Gabryel-lima
  * @date 2026-05-01
  */

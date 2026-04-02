@@ -7,11 +7,11 @@
 
 /**
  * @file include/rasterizer.h
- * @brief API pública mínima para rasterização de triângulos.
+ * @brief Rasterização software de triângulos para o caminho CPU.
  */
 
 /**
- * Rasteriza um único triângulo no framebuffer e z-buffer fornecidos.
+ * Rasteriza um único triângulo no framebuffer e no z-buffer fornecidos.
  * @param fb Ponteiro para o framebuffer
  * @param zbuf Ponteiro para o z-buffer
  * @param p0, p1, p2 Vértices do triângulo (coordenadas homogêneas)
