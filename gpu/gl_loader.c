@@ -1,8 +1,6 @@
 #include <dlfcn.h>   // dlopen, dlsym — POSIX puro
 
-#include "../include/gl_loader.h"
-
-
+#include "../src/internal/gl_loader.h"
 
 GLProcs gl_load(void) {
     GLProcs gl = {0};

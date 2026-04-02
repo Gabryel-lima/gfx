@@ -2,7 +2,7 @@
 #include <unistd.h>
 #include <stdint.h>
 
-#include "../include/framebuffer.h"
+#include "internal/framebuffer.h"
 
 void fb_close(Framebuffer *fb) {
 	if (!fb) return;

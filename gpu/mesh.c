@@ -1,6 +1,6 @@
 //#include "null.h"
 
-#include "../include/mesh.h"
+#include "../src/internal/mesh.h"
 
 Mesh *gfx_mesh_load(const char *path) {
     (void)path; // TODO: Implementar carregamento de malha a partir de arquivo

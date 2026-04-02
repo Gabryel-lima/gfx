@@ -5,7 +5,7 @@
 #include <stdint.h>     // uint32_t
 #include <unistd.h>     // open, close
 
-#include "../include/framebuffer.h"
+#include "internal/framebuffer.h"
 
 Framebuffer fb_open(const char *path) {
     Framebuffer fb = {0};

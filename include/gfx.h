@@ -3,8 +3,10 @@
 #include "gfx_math.h"
 
 /**
- * @file gfx.h
  * @brief Fachada pública e dispatcher dos backends gráficos.
+ * @author Gabryel-lima
+ * @date 2026-05-02
+ * @file include/gfx.h
  */
 
 /** Tipo opaco para uma malha 3D. */

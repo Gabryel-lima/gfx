@@ -1,16 +1,18 @@
 #pragma once
 
 /**
- * @file include/tinyobj_loader.h
- * @brief Parser OBJ/MTL em formato header-only; a implementação é habilitada por src/tinyobj_loader.c.
+ * @brief Parser OBJ/MTL em formato header-only com helpers de preview; a implementação é habilitada por src/tinyobj_loader.c.
  * @author Gabryel-lima
  * @date 2026-05-01
+ * @file include/tinyobj_loader.h
  */
 
 #ifndef TINYOBJ_LOADER_C_H_  // Include guard
 #define TINYOBJ_LOADER_C_H_  // Evita múltiplas inclusões do mesmo header
 
 #include <stddef.h>
+
+#include "gfx_math.h"
 
 #ifdef __cplusplus  // Permite que o header seja incluído em código C++
 extern "C" {
@@ -194,6 +196,63 @@ extern void tinyobj_shapes_free(TINYOBJ_SHAPE *shapes, size_t num_shapes);
 extern void tinyobj_materials_free(TINYOBJ_MATERIAL *materials,
                                    size_t num_materials);
 
+/** Retorna o vertice no indice informado ou (0,0,0) se o indice for invalido. 
+ *  @param attrib Ponteiro para a estrutura `TINYOBJ_ATTRIB` que contém os atributos do objeto
+ *  @param index Indice do vertice a ser retornado
+ *  @return Vertice no indice informado ou (0,0,0) se o indice for invalido
+ */
+extern Vec3 tinyobj_attrib_get_vertex(const TINYOBJ_ATTRIB *attrib, int index);
+
+/** Calcula os limites do conjunto de vertices. Se o objeto estiver vazio, usa [-1, 1]. 
+ *  @param attrib Ponteiro para a estrutura `TINYOBJ_ATTRIB` que contém os atributos do objeto
+ *  @param min_v Ponteiro para o vetor que receberá o valor mínimo dos limites
+ *  @param max_v Ponteiro para o vetor que receberá o valor máximo dos limites
+ */
+extern void tinyobj_attrib_compute_bounds(const TINYOBJ_ATTRIB *attrib,
+                                          Vec3 *min_v, Vec3 *max_v);
+
+/** Retorna a cor difusa do material ou um cinza padrao quando o material nao existe. 
+ *  @param materials Array de materiais analisados
+ *  @param num_materials Tamanho do array `materials`
+ *  @param material_id Indice do material a ser retornado
+ *  @return Cor difusa do material ou um cinza padrao se o material nao existir
+ */
+extern Vec3 tinyobj_material_color(const TINYOBJ_MATERIAL *materials,
+                                   size_t num_materials, int material_id);
+
+/** Projeta um vertice em coordenadas de tela usando a caixa de limites informada. 
+ *  @param v Vertice a ser projetado
+ *  @param min_v Limite minimo da caixa de limites
+ *  @param max_v Limite maximo da caixa de limites
+ *  @param width Largura da tela
+ *  @param height Altura da tela
+ *  @param margin Margem a ser aplicada na projeção
+ *  @return Vertice projetado em coordenadas de tela
+ */
+extern Vec4 tinyobj_project_vertex(Vec3 v, Vec3 min_v, Vec3 max_v,
+                                   int width, int height, int margin);
+
+/** Gera um preview em PPM a partir de dados OBJ ja carregados. 
+ *  @param attrib Ponteiro para a estrutura `TINYOBJ_ATTRIB` que contém os atributos do objeto
+ *  @param shapes Array de formas analisadas
+ *  @param num_shapes Tamanho do array `shapes`
+ *  @param materials Array de materiais analisados
+ *  @param num_materials Tamanho do array `materials`
+ *  @param path Caminho do arquivo PPM a ser gerado
+ *  @param width Largura do preview
+ *  @param height Altura do preview
+ *  @param background_rgba Cor de fundo em formato RGBA
+ *  @param margin Margem a ser aplicada na projeção
+ *  @return 0 em caso de sucesso, diferente de 0 em caso de erro
+ */
+extern int tinyobj_save_preview_ppm(const TINYOBJ_ATTRIB *attrib,
+                                    const TINYOBJ_SHAPE *shapes, size_t num_shapes,
+                                    const TINYOBJ_MATERIAL *materials, size_t num_materials,
+                                    const char *path,
+                                    uint32_t width, uint32_t height,
+                                    uint32_t background_rgba,
+                                    int margin);
+
 #ifdef __cplusplus
 }
 #endif
@@ -204,6 +263,7 @@ extern void tinyobj_materials_free(TINYOBJ_MATERIAL *materials,
 #include <assert.h>
 #include <string.h>
 #include <errno.h>
+#include <float.h>
 
 #if defined(TINYOBJ_MALLOC) && defined(TINYOBJ_CALLOC) && defined(TINYOBJ_FREE) && (defined(TINYOBJ_REALLOC) || defined(TINYOBJ_REALLOC_SIZED))
 /* ok */
@@ -1986,5 +2046,102 @@ void tinyobj_materials_free(TINYOBJ_MATERIAL *materials,
   }
 
   TINYOBJ_FREE(materials);
+}
+
+Vec3 tinyobj_attrib_get_vertex(const TINYOBJ_ATTRIB *attrib, int index) {
+  Vec3 v = { 0.0f, 0.0f, 0.0f };
+
+  if (!attrib || !attrib->vertices || index < 0 || (unsigned int)index >= attrib->num_vertices) {
+    return v;
+  }
+
+  size_t base = (size_t)index * 3;
+  v.x = attrib->vertices[base + 0];
+  v.y = attrib->vertices[base + 1];
+  v.z = attrib->vertices[base + 2];
+  return v;
+}
+
+void tinyobj_attrib_compute_bounds(const TINYOBJ_ATTRIB *attrib,
+                                   Vec3 *min_v, Vec3 *max_v) {
+  if (!min_v || !max_v) {
+    return;
+  }
+
+  if (!attrib || !attrib->vertices || attrib->num_vertices == 0) {
+    *min_v = (Vec3){ -1.0f, -1.0f, -1.0f };
+    *max_v = (Vec3){ 1.0f, 1.0f, 1.0f };
+    return;
+  }
+
+  *min_v = (Vec3){ FLT_MAX, FLT_MAX, FLT_MAX };
+  *max_v = (Vec3){ -FLT_MAX, -FLT_MAX, -FLT_MAX };
+
+  for (unsigned int i = 0; i < attrib->num_vertices; ++i) {
+    Vec3 v = tinyobj_attrib_get_vertex(attrib, (int)i);
+    min_v->x = fminf(min_v->x, v.x);
+    min_v->y = fminf(min_v->y, v.y);
+    min_v->z = fminf(min_v->z, v.z);
+    max_v->x = fmaxf(max_v->x, v.x);
+    max_v->y = fmaxf(max_v->y, v.y);
+    max_v->z = fmaxf(max_v->z, v.z);
+  }
+}
+
+Vec3 tinyobj_material_color(const TINYOBJ_MATERIAL *materials,
+                            size_t num_materials, int material_id) {
+  if (materials && material_id >= 0 && (size_t)material_id < num_materials) {
+    return (Vec3){
+      materials[material_id].diffuse[0],
+      materials[material_id].diffuse[1],
+      materials[material_id].diffuse[2]
+    };
+  }
+
+  return (Vec3){ 0.75f, 0.75f, 0.80f };
+}
+
+Vec4 tinyobj_project_vertex(Vec3 v, Vec3 min_v, Vec3 max_v,
+                            int width, int height, int margin) {
+  if (margin < 0) {
+    margin = 0;
+  }
+
+  float range_x = max_v.x - min_v.x;
+  float range_y = max_v.y - min_v.y;
+  float range_z = max_v.z - min_v.z;
+
+  if (range_x <= 0.0f) {
+    range_x = 1.0f;
+  }
+  if (range_y <= 0.0f) {
+    range_y = 1.0f;
+  }
+
+  float usable_w = (float)width - (2.0f * (float)margin);
+  float usable_h = (float)height - (2.0f * (float)margin);
+  if (usable_w <= 0.0f) {
+    usable_w = (float)width;
+  }
+  if (usable_h <= 0.0f) {
+    usable_h = (float)height;
+  }
+
+  float scale = fminf(usable_w / range_x, usable_h / range_y);
+  float draw_w = range_x * scale;
+  float draw_h = range_y * scale;
+
+  float x = (float)margin + 0.5f * ((float)width - (2.0f * (float)margin) - draw_w) + (v.x - min_v.x) * scale;
+  float y = (float)margin + 0.5f * ((float)height - (2.0f * (float)margin) - draw_h) + (max_v.y - v.y) * scale;
+  float z = (range_z > 0.0f) ? ((v.z - min_v.z) / range_z) : 0.5f;
+
+  if (z < 0.0f) {
+    z = 0.0f;
+  }
+  if (z > 1.0f) {
+    z = 1.0f;
+  }
+
+  return (Vec4){ x, y, z, 1.0f };
 }
 #endif /* TINYOBJ_LOADER_C_IMPLEMENTATION */

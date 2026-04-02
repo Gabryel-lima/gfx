@@ -1,4 +1,4 @@
-#include "../include/rasterizer.h"
+#include "internal/rasterizer.h"
 
 void rasterize_triangle(Framebuffer *fb, float *zbuf,
                         Vec4 p0, Vec4 p1, Vec4 p2,

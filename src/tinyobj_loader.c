@@ -1,3 +1,8 @@
 #define TINYOBJ_LOADER_C_IMPLEMENTATION
+#include "tinyobj_loader.h"
 
-#include "../include/tinyobj_loader.h"
+/** @brief TinyOBJ Loader implementation 
+ *  @author Gabryel-lima
+ *  @date 2026-05-02
+ *  @file src/tinyobj_loader.c
+*/

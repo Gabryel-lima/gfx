@@ -3,8 +3,10 @@
 #include <stdint.h>
 
 /**
- * @file gfx_math.h
  * @brief Tipos matemáticos e estruturas básicas compartilhadas pelo sistema gráfico.
+ * @author Gabryel-lima
+ * @date 2026-05-02
+ * @file include/gfx_math.h
  */
 
 /** Framebuffer RGBA compartilhado pelo caminho CPU e pelos previews em memória.

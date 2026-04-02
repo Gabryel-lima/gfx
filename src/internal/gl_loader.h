@@ -1,8 +1,10 @@
 #pragma once
 
 /**
- * @file include/gl_loader.h
  * @brief Carregador mínimo de símbolos OpenGL via dlopen/dlsym.
+ * @author Gabryel-lima
+ * @date 2026-05-02
+ * @file src/internal/gl_loader.h
  */
 
 /** Tipo para enums OpenGL */

@@ -1,8 +1,6 @@
 #include <dlfcn.h>
 
-#include "../include/x11_platform.h"
-
-
+#include "../src/internal/x11_platform.h"
 
 PlatformGL platform_gl_init(void) {
     PlatformGL p = {0};

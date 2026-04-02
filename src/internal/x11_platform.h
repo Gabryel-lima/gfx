@@ -1,9 +1,11 @@
 #pragma once
 
 /**
- * @file include/x11_platform.h
  * @brief Wrappers mínimos para X11 e GLX carregados dinamicamente.
- */
+ * @author Gabryel-lima
+ * @date 2026-05-02
+ * @file src/internal/x11_platform.h
+*/
 
 /** Tipo para identificadores X (XID) */
 typedef unsigned long  XID; // Identificador X11

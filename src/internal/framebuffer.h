@@ -2,18 +2,20 @@
 
 #include <stdint.h>
 
-#include "../gfx_math.h"
+#include "gfx_math.h"
 
 /**
- * @file include/framebuffer.h
  * @brief Suporte para framebuffer mapeado e buffers RGBA em memória.
- */
+ * @author Gabryel-lima
+ * @date 2026-05-02
+ * @file src/internal/framebuffer.h
+*/
 
 /**
  * Abre o dispositivo de framebuffer da plataforma (por exemplo, "/dev/fb0").
  * @param path Caminho para o dispositivo de framebuffer
  * @return Estrutura `Framebuffer`. Em caso de erro, `fd` será -1.
- */
+*/
 Framebuffer fb_open(const char *path);
 
 /** Fecha e desmapeia os recursos associados ao framebuffer.

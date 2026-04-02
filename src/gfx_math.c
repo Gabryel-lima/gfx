@@ -2,29 +2,78 @@
 
 #include <stdint.h>
 
-/* Provide simple scalar implementations to avoid linker errors when libm
- * isn't linked. These are small and portable. */
+/** @brief Implementações simples de funções matemáticas 
+ *  para evitar erros de link quando a libm não está vinculada. 
+ *  @author Gabryel-lima
+ *  @date 2026-05-02
+ *  @file src/gfx_math.c
+ *  @note Estas funções são pequenas e portáteis, e servem 
+ *  como substitutos para `fminf` e `fmaxf` da libm.
+*/
+
+/** Calcula o mínimo entre dois valores 
+ *  @param a Primeiro valor
+ *  @param b Segundo valor
+ *  @return O menor valor entre `a` e `b`
+ *  @note A implementação atual é um placeholder. 
+ *  Para uma implementação mais robusta, considere casos como NaN e infinitos.
+*/
 float fminf(float a, float b) { return a < b ? a : b; }
+
+/** Calcula o máximo entre dois valores
+ *  @param a Primeiro valor
+ *  @param b Segundo valor
+ *  @return O maior valor entre `a` e `b` 
+ *  @note A implementação atual é um placeholder. 
+ *  Para uma implementação mais robusta, considere casos como NaN e infinitos.
+*/
 float fmaxf(float a, float b) { return a > b ? a : b; }
 
-/* Vec3 helpers */
+/** Calcula o mínimo entre dois vetores
+ *  @param a Primeiro vetor
+ *  @param b Segundo vetor
+ *  @return Vetor contendo os menores valores de cada componente
+*/
 Vec3 vec3_min(Vec3 a, Vec3 b) {
     Vec3 r = { fminf(a.x, b.x), fminf(a.y, b.y), fminf(a.z, b.z) };
     return r;
 }
+
+/** Calcula o máximo entre dois vetores
+ *  @param a Primeiro vetor
+ *  @param b Segundo vetor
+ *  @return Vetor contendo os maiores valores de cada componente
+*/
 Vec3 vec3_max(Vec3 a, Vec3 b) {
     Vec3 r = { fmaxf(a.x, b.x), fmaxf(a.y, b.y), fmaxf(a.z, b.z) };
     return r;
 }
+
+/** Limita os valores de um vetor dentro de um intervalo
+ *  @param v Vetor a ser limitado
+ *  @param lo Limite inferior
+ *  @param hi Limite superior
+ *  @return Vetor com os valores limitados
+*/
 Vec3 vec3_clamp(Vec3 v, float lo, float hi) {
     Vec3 r = { fmaxf(lo, fminf(hi, v.x)), fmaxf(lo, fminf(hi, v.y)), fmaxf(lo, fminf(hi, v.z)) };
     return r;
 }
 
+/** Calcula a área de um triângulo 2D usando coordenadas homogêneas
+ *  @param a Primeiro vértice
+ *  @param b Segundo vértice
+ *  @param c Terceiro vértice
+ *  @return Área do triângulo
+*/
 float edge2d(Vec4 a, Vec4 b, Vec4 c) {
     return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
 }
 
+/** Converte um vetor de cor para um valor RGBA
+ *  @param color Vetor de cor
+ *  @return Valor RGBA
+*/
 uint32_t vec3_to_rgba(Vec3 color) {
     Vec3 c = vec3_clamp(color, 0.0f, 1.0f);
     uint8_t r = (uint8_t)(c.x * 255);

@@ -1,4 +1,4 @@
-#include "../include/shader.h"
+#include "../src/internal/shader.h"
 
 Shader* shader_create_from_source(const char *vert_src, const char *frag_src) {
     // Implementação fictícia para fins de exemplo

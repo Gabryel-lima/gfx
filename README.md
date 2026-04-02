@@ -2,26 +2,25 @@
 
 Biblioteca de renderização 2D/3D escrita em C99, organizada em uma fachada pública pequena e em módulos de suporte para math, framebuffer, rasterização, OBJ/MTL e integração dinâmica com GL/X11.
 
-Hoje o repositório expõe um dispatcher em `gfx.h` e blocos auxiliares para CPU/GPU. A documentação abaixo separa essas fronteiras para deixar claro o que é contrato público e o que ainda é suporte interno ou esboço de backend.
+Hoje o contrato público vive em `include/` e o suporte interno fica em `src/internal/`; os helpers específicos dos exemplos ficam em `examples/`. A documentação abaixo separa essas fronteiras para deixar claro o que é contrato público e o que ainda é suporte interno ou esboço de backend.
 
 Uma síntese visual adicional está em [svg/dual_backend_architecture.svg](svg/dual_backend_architecture.svg), mas as visões Mermaid abaixo são a referência principal desta documentação.
 
 ![C99](https://img.shields.io/badge/C99-00599C?style=for-the-badge) ![Linux](https://img.shields.io/badge/Linux-2E2E2E?style=for-the-badge) ![Mermaid%20Docs](https://img.shields.io/badge/Mermaid%20Docs-1F6FEB?style=for-the-badge) ![CPU%20%2B%20GPU](https://img.shields.io/badge/CPU_%2B_GPU-FF8C00?style=for-the-badge)
 
 > [!TIP]
-> O contrato público vive em `gfx.h`. O restante da árvore apoia esse contrato ou prepara integrações futuras.
+> O contrato público vive em `include/gfx.h`, `include/gfx_math.h` e `include/tinyobj_loader.h`. O restante da árvore apoia esse contrato, fica em `src/internal/` ou serve apenas aos exemplos.
 
 ## Estrutura do projeto
 
 ```
 gfx/
-├── gfx.h                   ← fachada pública e dispatcher de backend
-├── gfx_math.h              ← tipos e utilitários matemáticos compartilhados
+├── include/                ← headers públicos estáveis (`gfx.h`, `gfx_math.h`, `tinyobj_loader.h`)
 ├── cpu/                    ← framebuffer Linux e rasterização software
 ├── gpu/                    ← carregamento dinâmico GL/X11 e stubs GPU
-├── include/                ← headers de suporte (framebuffer, loader, rasterizer...)
 ├── src/                    ← implementação comum, parser OBJ/MTL e stubs
-├── examples/               ← smoke tests e demos
+│   └── internal/           ← headers privados de suporte
+├── examples/               ← smoke tests, demos e helpers locais
 ├── svg/                    ← artefatos visuais auxiliares
 └── CMakeLists.txt
 ```
@@ -62,15 +61,15 @@ flowchart TD
   demo1 --> api
   demo2 --> math
   demo2 --> tinyobj[include/tinyobj_loader.h]
-  demo2 --> fb[include/framebuffer.h]
-  demo2 --> rast[include/rasterizer.h]
+  demo2 --> fb[src/internal/framebuffer.h]
+  demo2 --> rast[src/internal/rasterizer.h]
 ```
 
 Próxima visão: dados compartilhados e parser OBJ/MTL.
 
 ### 2. 🧱 Dados compartilhados e parser OBJ/MTL
 
-`gfx_math.h` fornece os tipos geométricos e o `Framebuffer` usado pelos módulos de suporte. `include/tinyobj_loader.h` é o parser de OBJ/MTL em estilo header-only; `src/tinyobj_loader.c` apenas habilita a implementação. Essa camada produz `TINYOBJ_ATTRIB`, `TINYOBJ_SHAPE` e `TINYOBJ_MATERIAL`, que alimentam as demos e os módulos de rasterização.
+`include/gfx_math.h` fornece os tipos geométricos e o `Framebuffer` usado pelos módulos de suporte. `include/tinyobj_loader.h` é o parser de OBJ/MTL em estilo header-only; `src/tinyobj_loader.c` apenas habilita a implementação. Essa camada produz `TINYOBJ_ATTRIB`, `TINYOBJ_SHAPE` e `TINYOBJ_MATERIAL`, que alimentam as demos e os módulos de rasterização.
 
 ```mermaid
 flowchart TD
@@ -95,17 +94,17 @@ Detalhado em: suporte CPU e framebuffer.
 
 ### 3. 🖥️ Suporte CPU e framebuffer
 
-A camada `cpu/` e `include/framebuffer.h` cobre o caminho software. `cpu/fb0_platform.c` abre e escreve em `/dev/fb0`; `cpu/framebuffer.c` fecha e limpa a superfície; `cpu/rasterizer.c` desenha triângulos com z-buffer usando os tipos de `gfx_math.h`. A demo `examples/tinyobj_demo.c` usa essas primitivas para renderizar em memória e exportar um PPM.
+A camada `cpu/` e `src/internal/framebuffer.h` cobre o caminho software. `cpu/fb0_platform.c` abre e escreve em `/dev/fb0`; `cpu/framebuffer.c` fecha e limpa a superfície; `cpu/rasterizer.c` desenha triângulos com z-buffer usando os tipos de `include/gfx_math.h`. A demo `examples/tinyobj_demo.c` usa essas primitivas para renderizar em memória e exportar um PPM.
 
 ```mermaid
 flowchart TD
   subgraph CPU["Suporte CPU"]
-    fbapi[include/framebuffer.h]
+    fbapi[src/internal/framebuffer.h]
     fbplat[cpu/fb0_platform.c]
     fbcore[cpu/framebuffer.c]
-    rastapi[include/rasterizer.h]
+    rastapi[src/internal/rasterizer.h]
     rastimpl[cpu/rasterizer.c]
-    math[gfx_math.h]
+    math[include/gfx_math.h]
   end
 
   dev[/dev/fb0/]
@@ -133,10 +132,10 @@ Os arquivos em `gpu/` são infraestrutura de integração. `gpu/gl_loader.c` e `
 ```mermaid
 flowchart TD
   subgraph GPU["Suporte GPU"]
-    glapi[include/gl_loader.h]
-    x11api[include/x11_platform.h]
-    meshapi[include/mesh.h]
-    shaderapi[include/shader.h]
+    glapi[src/internal/gl_loader.h]
+    x11api[src/internal/x11_platform.h]
+    meshapi[src/internal/mesh.h]
+    shaderapi[src/internal/shader.h]
     glimpl[gpu/gl_loader.c]
     x11impl[gpu/x11_platform.c]
     meshimpl[gpu/mesh.c]
@@ -157,7 +156,7 @@ Detalhado em: API atual e notas de implementação.
 
 ## ✨ API atual
 
-A superfície estável do projeto está em `gfx.h`. O restante dos headers é suporte técnico ou infraestrutura de integração.
+A superfície estável do projeto está em `include/gfx.h`, `include/gfx_math.h` e `include/tinyobj_loader.h`. O restante dos headers é suporte técnico ou infraestrutura de integração.
 
 ### `gfx.h`
 - `GfxBackend` e `GfxContext`
@@ -166,19 +165,19 @@ A superfície estável do projeto está em `gfx.h`. O restante dos headers é su
 - `gfx_cleanup`
 - `gfx_get_stub_backend`
 
-### Tipos compartilhados em `gfx_math.h`
+### Tipos compartilhados em `include/gfx_math.h`
 - `Framebuffer`
 - `Vec2`, `Vec3`, `Vec4`, `Mat4`
 - `fminf`, `fmaxf`
 - `vec3_min`, `vec3_max`, `vec3_clamp`
 - `edge2d`, `vec3_to_rgba`
 
-### Suporte CPU em `include/framebuffer.h` e `include/rasterizer.h`
+### Suporte CPU em `src/internal/framebuffer.h` e `src/internal/rasterizer.h`
 - `fb_open`, `fb_close`
 - `fb_set_pixel`, `fb_clear`
 - `rasterize_triangle`
 
-### Suporte GPU em `include/gl_loader.h`, `include/x11_platform.h`, `include/mesh.h` e `include/shader.h`
+### Suporte GPU em `src/internal/gl_loader.h`, `src/internal/x11_platform.h`, `src/internal/mesh.h` e `src/internal/shader.h`
 - `GLProcs`, `gl_load`
 - `PlatformGL`, `platform_gl_init`
 - `gfx_mesh_load`, `gfx_mesh_free`
@@ -190,6 +189,15 @@ Observação: `gfx_mesh_load`/`gfx_mesh_free` e `shader_create_from_source`/`sha
 - `tinyobj_load_obj`, `tinyobj_load_mtl`
 - `tinyobj_attrib_init`, `tinyobj_attrib_free`
 - `tinyobj_shapes_free`, `tinyobj_materials_free`
+- `tinyobj_attrib_get_vertex`, `tinyobj_attrib_compute_bounds`
+- `tinyobj_material_color`, `tinyobj_project_vertex`
+- `tinyobj_save_preview_ppm` (`src/tinyobj_preview.c`)
+
+### Utilitários de filesystem em `examples/tinyobj_utils.h`
+- `tinyobj_get_executable_path`
+- `tinyobj_strip_basename`, `tinyobj_copy_path`, `tinyobj_join_path`
+- `tinyobj_read_file`
+- `tinyobj_default_file_reader`
 
 ## ▶️ Uso básico
 
@@ -247,6 +255,8 @@ O `CMakeLists.txt` gera dois alvos principais: `gfx_demo` e `tinyobj_demo`. O `M
 
 - `src/stubs.c` implementa a fachada pública atual e o backend stub.
 - `src/tinyobj_loader.c` existe para compilar a implementação que mora no header `include/tinyobj_loader.h`.
+- `src/tinyobj_preview.c` concentra o helper de preview em PPM e depende de `cpu/rasterizer.c`.
+- `examples/tinyobj_utils.h` concentra helpers de filesystem usados pelos exemplos e pelo carregamento padrão.
 - `examples/main.c` é um exemplo mínimo de despacho.
 - `examples/tinyobj_demo.c` usa um framebuffer em memória e exporta um PPM; ele não depende de X11.
 
