@@ -16,8 +16,10 @@ target_include_directories(gfx_demo PRIVATE
 target_link_libraries(gfx_demo PRIVATE dl)
 add_executable(tinyobj_demo
     examples/tinyobj_demo.c
+    cpu/fb0_platform.c
+    cpu/framebuffer.c
+    cpu/rasterizer.c
     src/gfx_math.c
-    src/stubs.c
     src/tinyobj_loader.c
 )
 
