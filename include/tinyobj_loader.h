@@ -2079,12 +2079,12 @@ void tinyobj_attrib_compute_bounds(const TinyObj_Attrib *attrib,
 
   for (unsigned int i = 0; i < attrib->num_vertices; ++i) {
     Vec3 v = tinyobj_attrib_get_vertex(attrib, (int)i);
-    min_v->x = fminf(min_v->x, v.x);
-    min_v->y = fminf(min_v->y, v.y);
-    min_v->z = fminf(min_v->z, v.z);
-    max_v->x = fmaxf(max_v->x, v.x);
-    max_v->y = fmaxf(max_v->y, v.y);
-    max_v->z = fmaxf(max_v->z, v.z);
+    min_v->x = gfx_fminf(min_v->x, v.x);
+    min_v->y = gfx_fminf(min_v->y, v.y);
+    min_v->z = gfx_fminf(min_v->z, v.z);
+    max_v->x = gfx_fmaxf(max_v->x, v.x);
+    max_v->y = gfx_fmaxf(max_v->y, v.y);
+    max_v->z = gfx_fmaxf(max_v->z, v.z);
   }
 }
 
@@ -2127,7 +2127,7 @@ Vec4 tinyobj_project_vertex(Vec3 v, Vec3 min_v, Vec3 max_v,
     usable_h = (float)height;
   }
 
-  float scale = fminf(usable_w / range_x, usable_h / range_y);
+  float scale = gfx_fminf(usable_w / range_x, usable_h / range_y);
   float draw_w = range_x * scale;
   float draw_h = range_y * scale;
 

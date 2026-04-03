@@ -17,11 +17,11 @@ typedef struct Shader Shader;
  * @return Ponteiro para Shader recém-criado ou NULL em caso de erro.
  * @note A implementação atual é um placeholder.
 */
-Shader* shader_create_from_source(const char *vert_src, const char *frag_src);
+Shader* gfx_shader_create_from_source(const char *vert_src, const char *frag_src);
 
 /** Destroi um `Shader` previamente criado.
  * @param s Ponteiro para o Shader a ser destruído
  * @return void
  * @note A implementação atual é um placeholder.
 */
-void shader_destroy(Shader *s);
+void gfx_shader_destroy(Shader *s);

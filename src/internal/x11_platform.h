@@ -44,4 +44,4 @@ typedef struct PlatformGL {
 } PlatformGL; // Abstração mínima da plataforma para GL
 
 /** Carrega X11 e GL/GLX e preenche PlatformGL. */
-PlatformGL platform_gl_init(void);
+PlatformGL gfx_platform_gl_init(void);

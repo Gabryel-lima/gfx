@@ -54,33 +54,33 @@ typedef struct Vec4 {
 */
 typedef struct Mat4 { Vec4 col[4]; } Mat4; // Matriz de transformação 4x4
 
-/** min calcula o valor mínimo entre dois inteiros
+/** gfx_min calcula o valor mínimo entre dois inteiros
  * @param a Primeiro valor
  * @param b Segundo valor
  * @return O menor valor entre a e b
 */
-int min(int a, int b);
+int gfx_min(int a, int b);
 
-/** max calcula o valor máximo entre dois inteiros
+/** gfx_max calcula o valor máximo entre dois inteiros
  * @param a Primeiro valor
  * @param b Segundo valor
  * @return O maior valor entre a e b
 */
-int max(int a, int b);
+int gfx_max(int a, int b);
 
-/** fminf calcula o menor valor entre dois floats 
+/** gfx_fminf calcula o menor valor entre dois floats 
  * @param a Primeiro valor
  * @param b Segundo valor
  * @return O menor valor entre a e b
 */
-float fminf(float a, float b);
+float gfx_fminf(float a, float b);
 
-/** fmaxf calcula o valor máximo entre dois floats
+/** gfx_fmaxf calcula o valor máximo entre dois floats
  * @param a Primeiro valor
  * @param b Segundo valor
  * @return O maior valor entre a e b
 */
-float fmaxf(float a, float b);
+float gfx_fmaxf(float a, float b);
 
 /** Component-wise minimum for Vec3
  * @param a Primeiro vetor
@@ -110,7 +110,7 @@ Vec3 vec3_clamp(Vec3 v, float lo, float hi);
  * @param c Ponto a ser testado
  * @return O valor da aresta (positivo se c estiver à esquerda de a->b, negativo se à direita, zero se colinear)
 */
-float edge2d(Vec4 a, Vec4 b, Vec4 c);
+float gfx_edge2d(Vec4 a, Vec4 b, Vec4 c);
 
 /** Função utilitária para converter cor Vec3 (RGB) para uint32_t RGBA 
  * @param color Cor em formato Vec3 (valores entre 0.0 e 1.0)

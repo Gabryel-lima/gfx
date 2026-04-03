@@ -8,12 +8,6 @@
 #define PREVIEW_MARGIN 32
 
 int main(int argc, char **argv) {
-    /** @todo Tmabém criar um script, talvez em ruby para visualizar por animação
-     *  os blocos de memória alocados e liberados, para facilitar o entendimento de como usar a API,
-     *  e também para ajudar a identificar possíveis vazamentos de memória, 
-     *  ou usos incorretos dos ponteiros, como acessar um ponteiro após liberar a memória, ou esquecer de liberar a
-     */
-
     char executable_path[TINYOBJ_UTILS_PATH_MAX];
     char build_dir[TINYOBJ_UTILS_PATH_MAX];
     char project_root[TINYOBJ_UTILS_PATH_MAX];
@@ -63,7 +57,7 @@ int main(int argc, char **argv) {
 
     Vec3 min_v, max_v;
     tinyobj_attrib_compute_bounds(&attrib, &min_v, &max_v);
-    print_summary(filename, &attrib, shapes, num_shapes, materials, num_materials, min_v, max_v);
+    tinyobj_print_summary(filename, &attrib, shapes, num_shapes, materials, num_materials, min_v, max_v);
 
     if (!attrib.face_num_verts || attrib.num_face_num_verts == 0) {
         fprintf(stderr, "Modelo sem faces para renderizar\n");

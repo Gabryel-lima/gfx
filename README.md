@@ -168,22 +168,22 @@ A superfície estável do projeto está em `include/gfx.h`, `include/gfx_math.h`
 ### Tipos compartilhados em `include/gfx_math.h`
 - `Framebuffer`
 - `Vec2`, `Vec3`, `Vec4`, `Mat4`
-- `fminf`, `fmaxf`
+- `gfx_min`, `gfx_max`, `gfx_fminf`, `gfx_fmaxf`
 - `vec3_min`, `vec3_max`, `vec3_clamp`
-- `edge2d`, `vec3_to_rgba`
+- `gfx_edge2d`, `vec3_to_rgba`
 
 ### Suporte CPU em `src/internal/framebuffer.h` e `src/internal/rasterizer.h`
-- `fb_open`, `fb_close`
-- `fb_set_pixel`, `fb_clear`
-- `rasterize_triangle`
+- `gfx_fb_open`, `gfx_fb_close`
+- `gfx_fb_set_pixel`, `gfx_fb_clear`
+- `gfx_rasterize_triangle`
 
 ### Suporte GPU em `src/internal/gl_loader.h`, `src/internal/x11_platform.h`, `src/internal/mesh.h` e `src/internal/shader.h`
-- `GLProcs`, `gl_load`
-- `PlatformGL`, `platform_gl_init`
+- `GLProcs`, `gfx_gl_load`
+- `PlatformGL`, `gfx_platform_gl_init`
 - `gfx_mesh_load`, `gfx_mesh_free`
-- `shader_create_from_source`, `shader_destroy`
+- `gfx_shader_create_from_source`, `gfx_shader_destroy`
 
-Observação: `gfx_mesh_load`/`gfx_mesh_free` e `shader_create_from_source`/`shader_destroy` ainda são stubs ou esboços, então a integração de backend GPU ainda não está completa.
+Observação: `gfx_mesh_load`/`gfx_mesh_free` e `gfx_shader_create_from_source`/`gfx_shader_destroy` ainda são stubs ou esboços, então a integração de backend GPU ainda não está completa.
 
 ### Parser OBJ/MTL em `include/tinyobj_loader.h`
 - `tinyobj_load_obj`, `tinyobj_load_mtl`
@@ -249,7 +249,7 @@ O `CMakeLists.txt` gera dois alvos principais: `gfx_demo` e `tinyobj_demo`. O `M
 - Linux, porque o projeto usa `/dev/fb0` e `linux/fb.h` no caminho CPU.
 - `libdl` no link, para `dlopen`/`dlsym`.
 - `libGL.so.1` e `libX11.so` apenas se você usar os módulos GPU.
-- Acesso ao framebuffer do sistema somente se a aplicação chamar `fb_open("/dev/fb0")`.
+- Acesso ao framebuffer do sistema somente se a aplicação chamar `gfx_fb_open("/dev/fb0")`.
 
 ## 🔎 Notas técnicas
 
@@ -278,7 +278,7 @@ O `CMakeLists.txt` gera dois alvos principais: `gfx_demo` e `tinyobj_demo`. O `M
 
 - Integrar um backend CPU completo por meio de uma API de alto nível
 - Completar a implementação de `gfx_mesh_load` e `gfx_mesh_free`
-- Completar `shader_create_from_source` e `shader_destroy`
+- Completar `gfx_shader_create_from_source` e `gfx_shader_destroy`
 - Adicionar texturas com correção perspectiva
 - Adicionar iluminação Phong
 - Adicionar sombras

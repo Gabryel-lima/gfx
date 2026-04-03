@@ -164,7 +164,7 @@ static void tinyobj_preview_render_faces(const TinyObj_Attrib *attrib,
             Vec4 p1 = tinyobj_project_vertex(v1, min_v, max_v, (int)fb->width, (int)fb->height, margin);
             Vec4 p2 = tinyobj_project_vertex(v2, min_v, max_v, (int)fb->width, (int)fb->height, margin);
 
-            rasterize_triangle(fb, zbuf, p0, p1, p2, color, color, color);
+            gfx_rasterize_triangle(fb, zbuf, p0, p1, p2, color, color, color);
 
             tinyobj_preview_draw_line(fb, (int)p0.x, (int)p0.y, (int)p1.x, (int)p1.y, 0xFFFFFFFF);
             tinyobj_preview_draw_line(fb, (int)p1.x, (int)p1.y, (int)p2.x, (int)p2.y, 0xFFFFFFFF);

@@ -2,7 +2,7 @@
 
 #include "../src/internal/gl_loader.h"
 
-GLProcs gl_load(void) {
+GLProcs gfx_gl_load(void) {
     GLProcs gl = {0};
     gl.handle = dlopen("libGL.so.1", RTLD_LAZY);
 

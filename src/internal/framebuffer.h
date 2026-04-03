@@ -16,14 +16,14 @@
  * @param path Caminho para o dispositivo de framebuffer
  * @return Estrutura `Framebuffer`. Em caso de erro, `fd` será -1.
 */
-Framebuffer fb_open(const char *path);
+Framebuffer gfx_fb_open(const char *path);
 
 /** Fecha e desmapeia os recursos associados ao framebuffer.
  * @param fb Ponteiro para Framebuffer a ser fechado
  * @return void
  * @note Após chamar esta função, o ponteiro `fb` não deve ser usado novamente sem reabri-lo.
 */
-void fb_close(Framebuffer *fb);
+void gfx_fb_close(Framebuffer *fb);
 
 /**
  * Escreve um pixel em coordenadas inteiras. x,y devem estar dentro dos limites.
@@ -32,11 +32,11 @@ void fb_close(Framebuffer *fb);
  * @param y Coordenada Y
  * @param rgba Cor no formato 0xRRGGBBAA (uint32_t)
  */
-void fb_set_pixel(Framebuffer *fb, int x, int y, uint32_t rgba);
+void gfx_fb_set_pixel(Framebuffer *fb, int x, int y, uint32_t rgba);
 
 /** Preenche o framebuffer com uma cor RGBA.
  * @param fb Ponteiro para Framebuffer
  * @param rgba Cor de limpeza no formato 0xRRGGBBAA (uint32_t)
  * @return void
 */
-void fb_clear(Framebuffer *fb, uint32_t rgba);
+void gfx_fb_clear(Framebuffer *fb, uint32_t rgba);

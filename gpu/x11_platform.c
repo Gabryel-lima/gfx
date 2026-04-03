@@ -2,7 +2,7 @@
 
 #include "../src/internal/x11_platform.h"
 
-PlatformGL platform_gl_init(void) {
+PlatformGL gfx_platform_gl_init(void) {
     PlatformGL p = {0};
     p.x11 = dlopen("libX11.so",  RTLD_LAZY);
     p.gl  = dlopen("libGL.so.1", RTLD_LAZY);

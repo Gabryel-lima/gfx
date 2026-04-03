@@ -34,11 +34,11 @@
  *  @param min_v Limite mínimo da caixa de limites do modelo
  *  @param max_v Limite máximo da caixa de limites do modelo
 */
-static void print_summary(const char *filename,
-                          const TinyObj_Attrib *attrib,
-                          const TinyObj_Shape *shapes, size_t num_shapes,
-                          const TinyObj_Material *materials, size_t num_materials,
-                          Vec3 min_v, Vec3 max_v) {
+static void tinyobj_print_summary(const char *filename,
+                                  const TinyObj_Attrib *attrib,
+                                  const TinyObj_Shape *shapes, size_t num_shapes,
+                                  const TinyObj_Material *materials, size_t num_materials,
+                                  Vec3 min_v, Vec3 max_v) {
     printf("Modelo carregado com sucesso\n");
     printf("Arquivo: %s\n", filename);
     printf("Vertices=%u normals=%u texcoords=%u faces=%u\n",

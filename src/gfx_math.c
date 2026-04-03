@@ -7,9 +7,12 @@
  *  @author Gabryel-lima
  *  @date 2026-05-02
  *  @file src/gfx_math.c
- *  @note Estas funções são pequenas e portáteis, e servem 
- *  como substitutos para `fminf` e `fmaxf` da libm.
+ *  @note Estas funções são pequenas e portáteis.
 */
+
+int gfx_min(int a, int b) { return a < b ? a : b; }
+
+int gfx_max(int a, int b) { return a > b ? a : b; }
 
 /** Calcula o mínimo entre dois valores 
  *  @param a Primeiro valor
@@ -18,7 +21,7 @@
  *  @note A implementação atual é um placeholder. 
  *  Para uma implementação mais robusta, considere casos como NaN e infinitos.
 */
-float fminf(float a, float b) { return a < b ? a : b; }
+float gfx_fminf(float a, float b) { return a < b ? a : b; }
 
 /** Calcula o máximo entre dois valores
  *  @param a Primeiro valor
@@ -27,7 +30,7 @@ float fminf(float a, float b) { return a < b ? a : b; }
  *  @note A implementação atual é um placeholder. 
  *  Para uma implementação mais robusta, considere casos como NaN e infinitos.
 */
-float fmaxf(float a, float b) { return a > b ? a : b; }
+float gfx_fmaxf(float a, float b) { return a > b ? a : b; }
 
 /** Calcula o mínimo entre dois vetores
  *  @param a Primeiro vetor
@@ -35,7 +38,7 @@ float fmaxf(float a, float b) { return a > b ? a : b; }
  *  @return Vetor contendo os menores valores de cada componente
 */
 Vec3 vec3_min(Vec3 a, Vec3 b) {
-    Vec3 r = { fminf(a.x, b.x), fminf(a.y, b.y), fminf(a.z, b.z) };
+    Vec3 r = { gfx_fminf(a.x, b.x), gfx_fminf(a.y, b.y), gfx_fminf(a.z, b.z) };
     return r;
 }
 
@@ -45,7 +48,7 @@ Vec3 vec3_min(Vec3 a, Vec3 b) {
  *  @return Vetor contendo os maiores valores de cada componente
 */
 Vec3 vec3_max(Vec3 a, Vec3 b) {
-    Vec3 r = { fmaxf(a.x, b.x), fmaxf(a.y, b.y), fmaxf(a.z, b.z) };
+    Vec3 r = { gfx_fmaxf(a.x, b.x), gfx_fmaxf(a.y, b.y), gfx_fmaxf(a.z, b.z) };
     return r;
 }
 
@@ -56,7 +59,7 @@ Vec3 vec3_max(Vec3 a, Vec3 b) {
  *  @return Vetor com os valores limitados
 */
 Vec3 vec3_clamp(Vec3 v, float lo, float hi) {
-    Vec3 r = { fmaxf(lo, fminf(hi, v.x)), fmaxf(lo, fminf(hi, v.y)), fmaxf(lo, fminf(hi, v.z)) };
+    Vec3 r = { gfx_fmaxf(lo, gfx_fminf(hi, v.x)), gfx_fmaxf(lo, gfx_fminf(hi, v.y)), gfx_fmaxf(lo, gfx_fminf(hi, v.z)) };
     return r;
 }
 
@@ -66,7 +69,7 @@ Vec3 vec3_clamp(Vec3 v, float lo, float hi) {
  *  @param c Terceiro vértice
  *  @return Área do triângulo
 */
-float edge2d(Vec4 a, Vec4 b, Vec4 c) {
+float gfx_edge2d(Vec4 a, Vec4 b, Vec4 c) {
     return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
 }
 

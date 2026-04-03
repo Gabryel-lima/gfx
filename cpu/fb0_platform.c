@@ -7,7 +7,7 @@
 
 #include "internal/framebuffer.h"
 
-Framebuffer fb_open(const char *path) {
+Framebuffer gfx_fb_open(const char *path) {
     Framebuffer fb = {0};
     fb.fd = open(path, O_RDWR);
 
@@ -24,6 +24,6 @@ Framebuffer fb_open(const char *path) {
 }
 
 // Escrever um pixel: endereçamento direto
-void fb_set_pixel(Framebuffer *fb, int x, int y, uint32_t rgba) {
+void gfx_fb_set_pixel(Framebuffer *fb, int x, int y, uint32_t rgba) {
     fb->pixels[y * fb->width + x] = rgba;
 }

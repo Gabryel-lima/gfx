@@ -4,7 +4,7 @@
 
 #include "internal/framebuffer.h"
 
-void fb_close(Framebuffer *fb) {
+void gfx_fb_close(Framebuffer *fb) {
 	if (!fb) return;
 
 	if (fb->pixels) {
@@ -19,7 +19,7 @@ void fb_close(Framebuffer *fb) {
 	}
 }
 
-void fb_clear(Framebuffer *fb, uint32_t rgba) {
+void gfx_fb_clear(Framebuffer *fb, uint32_t rgba) {
 	if (!fb || !fb->pixels) return;
 	size_t count = (size_t)fb->width * fb->height;
 	for (size_t i = 0; i < count; ++i) fb->pixels[i] = rgba;

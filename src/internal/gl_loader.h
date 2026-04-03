@@ -47,4 +47,4 @@ typedef struct GLProcs {
  * Carrega o subconjunto de símbolos OpenGL usado pelo projeto.
  * @return GLProcs preenchido com os ponteiros disponíveis.
  */
-GLProcs gl_load(void);
+GLProcs gfx_gl_load(void);
