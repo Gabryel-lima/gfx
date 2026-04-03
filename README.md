@@ -69,7 +69,7 @@ Próxima visão: dados compartilhados e parser OBJ/MTL.
 
 ### 2. 🧱 Dados compartilhados e parser OBJ/MTL
 
-`include/gfx_math.h` fornece os tipos geométricos e o `Framebuffer` usado pelos módulos de suporte. `include/tinyobj_loader.h` é o parser de OBJ/MTL em estilo header-only; `src/tinyobj_loader.c` apenas habilita a implementação. Essa camada produz `TINYOBJ_ATTRIB`, `TINYOBJ_SHAPE` e `TINYOBJ_MATERIAL`, que alimentam as demos e os módulos de rasterização.
+`include/gfx_math.h` fornece os tipos geométricos e o `Framebuffer` usado pelos módulos de suporte. `include/tinyobj_loader.h` é o parser de OBJ/MTL em estilo header-only; `src/tinyobj_loader.c` apenas habilita a implementação. Essa camada produz `TinyObj_Attrib`, `TinyObj_Shape` e `TinyObj_Material`, que alimentam as demos e os módulos de rasterização.
 
 ```mermaid
 flowchart TD
@@ -78,7 +78,7 @@ flowchart TD
     tinyhdr[include/tinyobj_loader.h]
     tinyimpl[src/tinyobj_loader.c]
     tinyapi[tinyobj_load_obj<br/>tinyobj_load_mtl<br/>tinyobj_attrib_init/free<br/>tinyobj_shapes_free<br/>tinyobj_materials_free]
-    tinydata[TINYOBJ_ATTRIB<br/>TINYOBJ_SHAPE<br/>TINYOBJ_MATERIAL]
+    tinydata[TinyObj_Attrib<br/>TinyObj_Shape<br/>TinyObj_Material]
   end
 
   demo[examples/tinyobj_demo.c]

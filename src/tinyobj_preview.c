@@ -18,11 +18,11 @@
 #include "tinyobj_loader.h"
 
 /** Esta função calcula os deslocamentos dos vértices de cada face 
- *  @param attrib Ponteiro para a estrutura `TINYOBJ_ATTRIB` que contém os atributos do objeto
+ *  @param attrib Ponteiro para a estrutura `TinyObj_Attrib` que contém os atributos do objeto
  *  @return Array de deslocamentos dos vértices de cada face, ou NULL em caso de erro
  *  @note O array retornado deve ser liberado pelo chamador usando `free()`
 */
-static size_t *tinyobj_preview_face_vertex_offsets(const TINYOBJ_ATTRIB *attrib) {
+static size_t *tinyobj_preview_face_vertex_offsets(const TinyObj_Attrib *attrib) {
     if (!attrib || !attrib->face_num_verts || attrib->num_face_num_verts == 0) {
         return NULL;
     }
@@ -114,10 +114,10 @@ static int tinyobj_preview_save_ppm(const char *path, const Framebuffer *fb) {
 }
 
 /** Esta função renderiza as faces de um objeto 3D no framebuffer
- *  @param attrib Ponteiro para a estrutura `TINYOBJ_ATTRIB` que contém os atributos do objeto
+ *  @param attrib Ponteiro para a estrutura `TinyObj_Attrib` que contém os atributos do objeto
  *  @param materials Ponteiro para a lista de materiais
  *  @param num_materials Número de materiais na lista
- *  @param shape Ponteiro para a estrutura `TINYOBJ_SHAPE` que contém as informações da forma
+ *  @param shape Ponteiro para a estrutura `TinyObj_Shape` que contém as informações da forma
  *  @param min_v Coordenadas mínimas do objeto
  *  @param max_v Coordenadas máximas do objeto
  *  @param face_vertex_offsets Array de deslocamentos dos vértices de cada face
@@ -125,9 +125,9 @@ static int tinyobj_preview_save_ppm(const char *path, const Framebuffer *fb) {
  *  @param zbuf Ponteiro para o buffer de profundidade
  *  @param margin Margem para o desenho
  */
-static void tinyobj_preview_render_faces(const TINYOBJ_ATTRIB *attrib,
-                                         const TINYOBJ_MATERIAL *materials, size_t num_materials,
-                                         const TINYOBJ_SHAPE *shape, Vec3 min_v, Vec3 max_v,
+static void tinyobj_preview_render_faces(const TinyObj_Attrib *attrib,
+                                         const TinyObj_Material *materials, size_t num_materials,
+                                         const TinyObj_Shape *shape, Vec3 min_v, Vec3 max_v,
                                          const size_t *face_vertex_offsets,
                                          Framebuffer *fb, float *zbuf, int margin) {
     size_t face_begin = shape ? (size_t)shape->face_offset : 0;
@@ -148,9 +148,9 @@ static void tinyobj_preview_render_faces(const TINYOBJ_ATTRIB *attrib,
         Vec3 color = tinyobj_material_color(materials, num_materials, material_id);
 
         for (int tri = 1; tri < verts_in_face - 1; ++tri) {
-            TINYOBJ_VERTEX_INDEX i0 = attrib->faces[vertex_offset + 0];
-            TINYOBJ_VERTEX_INDEX i1 = attrib->faces[vertex_offset + (size_t)tri];
-            TINYOBJ_VERTEX_INDEX i2 = attrib->faces[vertex_offset + (size_t)tri + 1];
+            TinyObj_Vertex_Index i0 = attrib->faces[vertex_offset + 0];
+            TinyObj_Vertex_Index i1 = attrib->faces[vertex_offset + (size_t)tri];
+            TinyObj_Vertex_Index i2 = attrib->faces[vertex_offset + (size_t)tri + 1];
 
             if (i0.v_idx < 0 || i1.v_idx < 0 || i2.v_idx < 0) {
                 continue;
@@ -174,7 +174,7 @@ static void tinyobj_preview_render_faces(const TINYOBJ_ATTRIB *attrib,
 }
 
 /** Esta função salva uma pré-visualização do objeto 3D em um arquivo PPM
- *  @param attrib Ponteiro para a estrutura `TINYOBJ_ATTRIB` que contém os atributos do objeto
+ *  @param attrib Ponteiro para a estrutura `TinyObj_Attrib` que contém os atributos do objeto
  *  @param shapes Ponteiro para a lista de formas
  *  @param num_shapes Número de formas na lista
  *  @param materials Ponteiro para a lista de materiais
@@ -183,9 +183,9 @@ static void tinyobj_preview_render_faces(const TINYOBJ_ATTRIB *attrib,
  *  @param width Largura da imagem
  *  @param height Altura da imagem
  */
-int tinyobj_save_preview_ppm(const TINYOBJ_ATTRIB *attrib,
-                             const TINYOBJ_SHAPE *shapes, size_t num_shapes,
-                             const TINYOBJ_MATERIAL *materials, size_t num_materials,
+int tinyobj_save_preview_ppm(const TinyObj_Attrib *attrib,
+                             const TinyObj_Shape *shapes, size_t num_shapes,
+                             const TinyObj_Material *materials, size_t num_materials,
                              const char *path,
                              uint32_t width, uint32_t height,
                              uint32_t background_rgba,

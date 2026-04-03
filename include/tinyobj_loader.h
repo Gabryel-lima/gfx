@@ -38,7 +38,7 @@ extern "C" {
  * @param alpha_texname Nome do arquivo de textura para map_d
  * @note Após chamar esta função, o ponteiro `s` não deve ser usado novamente
  */
-typedef struct TINYOBJ_MATERIAL {
+typedef struct TinyObj_Material {
   char *name;               // nome do material, pode ser usado para lookup
 
   float ambient[3];         // coeficiente de reflexão ambiente, onde 0.0 é sem reflexão e 1.0 é totalmente reflexivo
@@ -61,29 +61,29 @@ typedef struct TINYOBJ_MATERIAL {
   char *bump_texname;               /* map_bump, bump */
   char *displacement_texname;       /* disp */
   char *alpha_texname;              /* map_d */
-} TINYOBJ_MATERIAL;
+} TinyObj_Material;
 
 /** Estrutura que representa uma forma (shape) 
  * @param name Nome da forma, pode ser usado para lookup
  * @param face_offset Índice de início dos vértices dessa forma no array `faces` de `Tinyobj_attrib`
  * @param length Número de vértices dessa forma, ou seja, quantos elementos do array `faces` pertencem a essa forma
 */
-typedef struct TINYOBJ_SHAPE {
+typedef struct TinyObj_Shape {
   char *name; /* group name or object name. */
   unsigned int face_offset;
   unsigned int length;
-} TINYOBJ_SHAPE;
+} TinyObj_Shape;
 
 /** Estrutura que representa um índice de vértice
  * @param v_idx Índice do vértice
  * @param vt_idx Índice da coordenada de textura
  * @param vn_idx Índice da normal
  */
-typedef struct TINYOBJ_VERTEX_INDEX { 
+typedef struct TinyObj_Vertex_Index { 
   int v_idx;    // Índice do vértice
   int vt_idx;   // Índice da coordenada de textura
   int vn_idx;   // Índice da normal
-} TINYOBJ_VERTEX_INDEX;
+} TinyObj_Vertex_Index;
 
 /** Estrutura que representa os atributos de um objeto
  * @param num_vertices Número de vértices
@@ -95,12 +95,12 @@ typedef struct TINYOBJ_VERTEX_INDEX {
  * @param vertices Array de vértices, onde cada vértice é representado por 3 floats (x, y, z)
  * @param normals Array de normais, onde cada normal é representada por 3 floats (x, y, z)
  * @param texcoords Array de coordenadas de textura, onde cada coordenada é representada por 2 floats (u, v)
- * @param faces Array de índices de vértice, onde cada face é representada por um array de `TINYOBJ_VERTEX_INDEX` (v_idx, vt_idx, vn_idx)
+ * @param faces Array de índices de vértice, onde cada face é representada por um array de `TinyObj_Vertex_Index` (v_idx, vt_idx, vn_idx)
  * @param face_num_verts Array que indica quantos vértices cada face possui, usado para formas com faces de tamanho variável
- * @param material_ids Array de índices de material para cada face, onde cada elemento é um índice que referencia um material em `TINYOBJ_MATERIAL`
+ * @param material_ids Array de índices de material para cada face, onde cada elemento é um índice que referencia um material em `TinyObj_Material`
  * @note Após chamar esta função, os ponteiros `vertices`, `normals`, `texcoords`, `faces`, `face_num_verts` e `material_ids` não devem ser usados novamente
  */
-typedef struct TINYOBJ_ATTRIB {
+typedef struct TinyObj_Attrib {
   unsigned int num_vertices; // Número de vértices
   unsigned int num_normals; // Número de normais
   unsigned int num_texcoords; // Número de coordenadas de textura
@@ -112,10 +112,10 @@ typedef struct TINYOBJ_ATTRIB {
   float *vertices; // Array de vértices, onde cada vértice é representado por 3 floats (x, y, z)
   float *normals; // Array de normais, onde cada normal é representada por 3 floats (x, y, z)
   float *texcoords; // Array de coordenadas de textura, onde cada coordenada é representada por 2 floats (u, v)
-  TINYOBJ_VERTEX_INDEX *faces; // Array de índices de vértice, onde cada face é representada por um array de `TINYOBJ_VERTEX_INDEX` (v_idx, vt_idx, vn_idx)
+  TinyObj_Vertex_Index *faces; // Array de índices de vértice, onde cada face é representada por um array de `TinyObj_Vertex_Index` (v_idx, vt_idx, vn_idx)
   int *face_num_verts; // Array que indica quantos vértices cada face possui, usado para formas com faces de tamanho variável
-  int *material_ids; // Array de índices de material para cada face, onde cada elemento é um índice que referencia um material em `TINYOBJ_MATERIAL`
-} TINYOBJ_ATTRIB;
+  int *material_ids; // Array de índices de material para cada face, onde cada elemento é um índice que referencia um material em `TinyObj_Material`
+} TinyObj_Attrib;
 
 
 #define TINYOBJ_FLAG_TRIANGULATE (1 << 0)   // Triangulariza faces com mais de 3 vértices (quads, ngons) em triângulos
@@ -151,8 +151,8 @@ typedef void (*File_reader_callback)(void *ctx, const char *filename, int is_mtl
  * Retorna TINYOBJ_SUCCESS se tudo ocorrer bem.
  * Retorna TINYOBJ_ERROR_*** em caso de erro.
  */
-extern int tinyobj_load_obj(TINYOBJ_ATTRIB *attrib, TINYOBJ_SHAPE **shapes,
-                             size_t *num_shapes, TINYOBJ_MATERIAL **materials,
+extern int tinyobj_load_obj(TinyObj_Attrib *attrib, TinyObj_Shape **shapes,
+                             size_t *num_shapes, TinyObj_Material **materials,
                              size_t *num_materials, const char *file_name, File_reader_callback file_reader,
                              void *ctx, unsigned int flags);
 
@@ -167,48 +167,48 @@ extern int tinyobj_load_obj(TINYOBJ_ATTRIB *attrib, TINYOBJ_SHAPE **shapes,
  * Retorna TINYOBJ_SUCCESS se tudo ocorrer bem.
  * Retorna TINYOBJ_ERROR_*** em caso de erro.
  */
-extern int tinyobj_load_mtl(TINYOBJ_MATERIAL **materials_out,
+extern int tinyobj_load_mtl(TinyObj_Material **materials_out,
                                   size_t *num_materials_out,
                                   const char *filename, const char *obj_filename, 
                                   File_reader_callback file_reader, void *ctx);
 
 /** Inicializa os atributos de um objeto 
- * @param attrib Ponteiro para a estrutura `TINYOBJ_ATTRIB` a ser inicializada
+ * @param attrib Ponteiro para a estrutura `TinyObj_Attrib` a ser inicializada
  */
-extern void tinyobj_attrib_init(TINYOBJ_ATTRIB *attrib);
+extern void tinyobj_attrib_init(TinyObj_Attrib *attrib);
 
 
 /** Libera os atributos de um objeto
- * @param attrib Ponteiro para a estrutura `TINYOBJ_ATTRIB` a ser liberada 
+ * @param attrib Ponteiro para a estrutura `TinyObj_Attrib` a ser liberada 
  */
-extern void tinyobj_attrib_free(TINYOBJ_ATTRIB *attrib);
+extern void tinyobj_attrib_free(TinyObj_Attrib *attrib);
 
 /** Libera as formas analisadas
  * @param shapes Array de formas a ser liberado
  * @param num_shapes Tamanho do array `shapes`
  */
-extern void tinyobj_shapes_free(TINYOBJ_SHAPE *shapes, size_t num_shapes);
+extern void tinyobj_shapes_free(TinyObj_Shape *shapes, size_t num_shapes);
 
 /** Libera os materiais analisados
  * @param materials Array de materiais a ser liberado
  * @param num_materials Tamanho do array `materials`
  */
-extern void tinyobj_materials_free(TINYOBJ_MATERIAL *materials,
+extern void tinyobj_materials_free(TinyObj_Material *materials,
                                    size_t num_materials);
 
 /** Retorna o vertice no indice informado ou (0,0,0) se o indice for invalido. 
- *  @param attrib Ponteiro para a estrutura `TINYOBJ_ATTRIB` que contém os atributos do objeto
+ *  @param attrib Ponteiro para a estrutura `TinyObj_Attrib` que contém os atributos do objeto
  *  @param index Indice do vertice a ser retornado
  *  @return Vertice no indice informado ou (0,0,0) se o indice for invalido
  */
-extern Vec3 tinyobj_attrib_get_vertex(const TINYOBJ_ATTRIB *attrib, int index);
+extern Vec3 tinyobj_attrib_get_vertex(const TinyObj_Attrib *attrib, int index);
 
 /** Calcula os limites do conjunto de vertices. Se o objeto estiver vazio, usa [-1, 1]. 
- *  @param attrib Ponteiro para a estrutura `TINYOBJ_ATTRIB` que contém os atributos do objeto
+ *  @param attrib Ponteiro para a estrutura `TinyObj_Attrib` que contém os atributos do objeto
  *  @param min_v Ponteiro para o vetor que receberá o valor mínimo dos limites
  *  @param max_v Ponteiro para o vetor que receberá o valor máximo dos limites
  */
-extern void tinyobj_attrib_compute_bounds(const TINYOBJ_ATTRIB *attrib,
+extern void tinyobj_attrib_compute_bounds(const TinyObj_Attrib *attrib,
                                           Vec3 *min_v, Vec3 *max_v);
 
 /** Retorna a cor difusa do material ou um cinza padrao quando o material nao existe. 
@@ -217,7 +217,7 @@ extern void tinyobj_attrib_compute_bounds(const TINYOBJ_ATTRIB *attrib,
  *  @param material_id Indice do material a ser retornado
  *  @return Cor difusa do material ou um cinza padrao se o material nao existir
  */
-extern Vec3 tinyobj_material_color(const TINYOBJ_MATERIAL *materials,
+extern Vec3 tinyobj_material_color(const TinyObj_Material *materials,
                                    size_t num_materials, int material_id);
 
 /** Projeta um vertice em coordenadas de tela usando a caixa de limites informada. 
@@ -233,7 +233,7 @@ extern Vec4 tinyobj_project_vertex(Vec3 v, Vec3 min_v, Vec3 max_v,
                                    int width, int height, int margin);
 
 /** Gera um preview em PPM a partir de dados OBJ ja carregados. 
- *  @param attrib Ponteiro para a estrutura `TINYOBJ_ATTRIB` que contém os atributos do objeto
+ *  @param attrib Ponteiro para a estrutura `TinyObj_Attrib` que contém os atributos do objeto
  *  @param shapes Array de formas analisadas
  *  @param num_shapes Tamanho do array `shapes`
  *  @param materials Array de materiais analisados
@@ -245,9 +245,9 @@ extern Vec4 tinyobj_project_vertex(Vec3 v, Vec3 min_v, Vec3 max_v,
  *  @param margin Margem a ser aplicada na projeção
  *  @return 0 em caso de sucesso, diferente de 0 em caso de erro
  */
-extern int tinyobj_save_preview_ppm(const TINYOBJ_ATTRIB *attrib,
-                                    const TINYOBJ_SHAPE *shapes, size_t num_shapes,
-                                    const TINYOBJ_MATERIAL *materials, size_t num_materials,
+extern int tinyobj_save_preview_ppm(const TinyObj_Attrib *attrib,
+                                    const TinyObj_Shape *shapes, size_t num_shapes,
+                                    const TinyObj_Material *materials, size_t num_materials,
                                     const char *path,
                                     uint32_t width, uint32_t height,
                                     uint32_t background_rgba,
@@ -417,13 +417,13 @@ static int fixIndex(int idx, size_t n) {
   return (int)n + idx; /* negative value = relative */
 }
 
-/** Parse a raw triple string (e.g., "1/2/3") into a TINYOBJ_VERTEX_INDEX structure
+/** Parse a raw triple string (e.g., "1/2/3") into a TinyObj_Vertex_Index structure
  *  @param token Ponteiro para o ponteiro de string a ser processado. 
- *  @return Estrutura TINYOBJ_VERTEX_INDEX contendo os índices de vértice, coordenada de textura e normal.
+ *  @return Estrutura TinyObj_Vertex_Index contendo os índices de vértice, coordenada de textura e normal.
  *  @note O ponteiro apontado por `token` será avançado para o próximo caractere após o triple.
  */
-static TINYOBJ_VERTEX_INDEX parseRawTriple(const char **token) {
-  TINYOBJ_VERTEX_INDEX vi;
+static TinyObj_Vertex_Index parseRawTriple(const char **token) {
+  TinyObj_Vertex_Index vi;
   /* 0x80000000 = -2147483648 = invalid */
   vi.v_idx = (int)(0x80000000);
   vi.vn_idx = (int)(0x80000000);
@@ -758,11 +758,11 @@ static char *dynamic_fgets(char **buf, size_t *size, FILE *file) {
   return ret;
 }
 
-/** Initialize a TINYOBJ_MATERIAL structure with default values
- *  @param material Ponteiro para a estrutura `TINYOBJ_MATERIAL` a ser inicializada.
- *  @note Esta função define os campos da estrutura `TINYOBJ_MATERIAL` para valores padrão, como NULL para strings e 0 ou 1 para os campos numéricos.
+/** Initialize a TinyObj_Material structure with default values
+ *  @param material Ponteiro para a estrutura `TinyObj_Material` a ser inicializada.
+ *  @note Esta função define os campos da estrutura `TinyObj_Material` para valores padrão, como NULL para strings e 0 ou 1 para os campos numéricos.
 */
-static void initMaterial(TINYOBJ_MATERIAL *material) {
+static void initMaterial(TinyObj_Material *material) {
   int i;
   material->name = NULL;
   material->ambient_texname = NULL;
@@ -802,14 +802,14 @@ static void initMaterial(TINYOBJ_MATERIAL *material) {
  *  @param value Valor associado à chave hash
  *  @param next Ponteiro para a próxima entrada na cadeia de colisão (usado para lidar com colisões de hash)
 */
-typedef struct HASH_TABLE_ENTRY {
+typedef struct Hash_Table_Entry {
   unsigned long hash; // Valor hash da chave
   int filled;         // Indica se a entrada está preenchida (1) ou vazia (0)
   int pad0;           // Padding para alinhamento de 4 bytes
   long value;         // Valor associado à chave hash
 
-  struct HASH_TABLE_ENTRY* next; // Ponteiro para a próxima entrada na cadeia de colisão (usado para lidar com colisões de hash)
-} HASH_TABLE_ENTRY;
+  struct Hash_Table_Entry* next; // Ponteiro para a próxima entrada na cadeia de colisão (usado para lidar com colisões de hash)
+} Hash_Table_Entry;
 
 /** Estrutura da tabela hash
  *  @param hashes Array de valores hash
@@ -817,12 +817,12 @@ typedef struct HASH_TABLE_ENTRY {
  *  @param capacity Capacidade da tabela hash
  *  @param n Número de entradas na tabela hash
 */
-typedef struct HASH_TABLE {
+typedef struct Hash_Table {
   unsigned long* hashes;      // Array de valores hash
-  HASH_TABLE_ENTRY* entries;  // Array de entradas da tabela hash
+  Hash_Table_Entry* entries;  // Array de entradas da tabela hash
   size_t capacity;            // Capacidade da tabela hash
   size_t n;                   // Número de entradas na tabela hash
-} HASH_TABLE;
+} Hash_Table;
 
 /** Função de hash DJB2
  *  @param str String de entrada
@@ -843,12 +843,12 @@ static unsigned long hash_djb2(const unsigned char* str) {
  *  @param start_capacity Capacidade inicial da tabela hash
  *  @param hash_table Ponteiro para a tabela hash a ser criada
  */
-static void create_hash_table(size_t start_capacity, HASH_TABLE* hash_table) {
+static void create_hash_table(size_t start_capacity, Hash_Table* hash_table) {
   if (start_capacity < 1)
     start_capacity = HASH_TABLE_DEFAULT_SIZE;
 
   hash_table->hashes = (unsigned long*) TINYOBJ_MALLOC(start_capacity * sizeof(unsigned long));
-  hash_table->entries = (HASH_TABLE_ENTRY*) TINYOBJ_CALLOC(start_capacity, sizeof(HASH_TABLE_ENTRY));
+  hash_table->entries = (Hash_Table_Entry*) TINYOBJ_CALLOC(start_capacity, sizeof(Hash_Table_Entry));
   hash_table->capacity = start_capacity;
   hash_table->n = 0;
 }
@@ -856,7 +856,7 @@ static void create_hash_table(size_t start_capacity, HASH_TABLE* hash_table) {
 /** Destroi uma tabela hash
  *  @param hash_table Ponteiro para a tabela hash a ser destruída
  */
-static void destroy_hash_table(HASH_TABLE* hash_table) {
+static void destroy_hash_table(Hash_Table* hash_table) {
   TINYOBJ_FREE(hash_table->entries);
   TINYOBJ_FREE(hash_table->hashes);
 }
@@ -867,13 +867,13 @@ static void destroy_hash_table(HASH_TABLE* hash_table) {
  *  @param hash_table Ponteiro para a tabela hash
  *  @return Código de sucesso ou erro
  */
-static int hash_table_insert_value(unsigned long hash, long value, HASH_TABLE* hash_table) {
+static int hash_table_insert_value(unsigned long hash, long value, Hash_Table* hash_table) {
   /* Insert value */
   size_t start_index = hash % hash_table->capacity;
   size_t index = start_index;
-  HASH_TABLE_ENTRY* start_entry = hash_table->entries + start_index;
+  Hash_Table_Entry* start_entry = hash_table->entries + start_index;
   size_t i;
-  HASH_TABLE_ENTRY* entry;
+  Hash_Table_Entry* entry;
 
   for (i = 1; hash_table->entries[index].filled; i++) {
     if (i >= hash_table->capacity)
@@ -901,7 +901,7 @@ static int hash_table_insert_value(unsigned long hash, long value, HASH_TABLE* h
  *  @param hash_table Ponteiro para a tabela hash
  *  @return Código de sucesso ou erro
  */
-static int hash_table_insert(unsigned long hash, long value, HASH_TABLE* hash_table) {
+static int hash_table_insert(unsigned long hash, long value, Hash_Table* hash_table) {
   int ret = hash_table_insert_value(hash, value, hash_table);
 
   if (ret == HASH_TABLE_SUCCESS) {
@@ -916,8 +916,8 @@ static int hash_table_insert(unsigned long hash, long value, HASH_TABLE* hash_ta
  *  @param hash_table Ponteiro para a tabela hash
  *  @return Ponteiro para a entrada encontrada ou NULL se não encontrada
  */
-static HASH_TABLE_ENTRY* hash_table_find(unsigned long hash, HASH_TABLE* hash_table) {
-  HASH_TABLE_ENTRY* entry = hash_table->entries + (hash % hash_table->capacity);
+static Hash_Table_Entry* hash_table_find(unsigned long hash, Hash_Table* hash_table) {
+  Hash_Table_Entry* entry = hash_table->entries + (hash % hash_table->capacity);
 
   while (entry) {
     if (entry->hash == hash && entry->filled) {
@@ -931,9 +931,9 @@ static HASH_TABLE_ENTRY* hash_table_find(unsigned long hash, HASH_TABLE* hash_ta
 /** Cresce a tabela hash
  *  @param hash_table Ponteiro para a tabela hash a ser crescida
  */
-static void hash_table_grow(HASH_TABLE* hash_table) {
+static void hash_table_grow(Hash_Table* hash_table) {
   size_t new_capacity;        // Nova capacidade da tabela hash
-  HASH_TABLE new_hash_table;  // Nova tabela hash para armazenar os dados rehashados
+  Hash_Table new_hash_table;  // Nova tabela hash para armazenar os dados rehashados
   size_t i;                   // Índice para iterar sobre as entradas da tabela hash
 
   new_capacity = 2 * hash_table->capacity;
@@ -942,13 +942,13 @@ static void hash_table_grow(HASH_TABLE* hash_table) {
   new_hash_table.hashes = hash_table->hashes = (unsigned long*) TINYOBJ_REALLOC_SIZED(
       (void*) hash_table->hashes, sizeof(unsigned long) * hash_table->capacity, sizeof(unsigned long) * new_capacity);
 
-  new_hash_table.entries = (HASH_TABLE_ENTRY*) TINYOBJ_CALLOC(new_capacity, sizeof(HASH_TABLE_ENTRY));
+  new_hash_table.entries = (Hash_Table_Entry*) TINYOBJ_CALLOC(new_capacity, sizeof(Hash_Table_Entry));
   new_hash_table.capacity = new_capacity;
   new_hash_table.n = hash_table->n;
 
   /* Rehash */
   for (i = 0; i < hash_table->capacity; i++) {
-    HASH_TABLE_ENTRY* entry = &hash_table->entries[i];
+    Hash_Table_Entry* entry = &hash_table->entries[i];
     if (entry->filled) {
             hash_table_insert_value(entry->hash, entry->value, &new_hash_table);
     }
@@ -963,7 +963,7 @@ static void hash_table_grow(HASH_TABLE* hash_table) {
  *  @param hash_table Ponteiro para a tabela hash
  *  @return 1 se a chave existir, 0 caso contrário
  */
-static int hash_table_exists(const char* name, HASH_TABLE* hash_table) {
+static int hash_table_exists(const char* name, Hash_Table* hash_table) {
   return hash_table_find(hash_djb2((const unsigned char*)name), hash_table) != NULL;
 }
 
@@ -972,11 +972,11 @@ static int hash_table_exists(const char* name, HASH_TABLE* hash_table) {
  *  @param val Valor a ser associado à chave
  *  @param hash_table Ponteiro para a tabela hash
  */
-static void hash_table_set(const char* name, size_t val, HASH_TABLE* hash_table) {
+static void hash_table_set(const char* name, size_t val, Hash_Table* hash_table) {
   /* Hash name */
   unsigned long hash = hash_djb2((const unsigned char *)name);
 
-  HASH_TABLE_ENTRY* entry = hash_table_find(hash, hash_table);
+  Hash_Table_Entry* entry = hash_table_find(hash, hash_table);
   if (entry) {
     entry->value = (long)val;
     return;
@@ -995,8 +995,8 @@ static void hash_table_set(const char* name, size_t val, HASH_TABLE* hash_table)
  *  @param hash_table Ponteiro para a tabela hash
  *  @return Valor associado à chave, ou 0 se a chave não existir
  */
-static long hash_table_get(const char* name, HASH_TABLE* hash_table) {
-  HASH_TABLE_ENTRY* ret = hash_table_find(hash_djb2((const unsigned char*)(name)), hash_table);
+static long hash_table_get(const char* name, Hash_Table* hash_table) {
+  Hash_Table_Entry* ret = hash_table_find(hash_djb2((const unsigned char*)(name)), hash_table);
   return ret->value;
 }
 
@@ -1006,13 +1006,13 @@ static long hash_table_get(const char* name, HASH_TABLE* hash_table) {
  *  @param new_mat Ponteiro para o novo material a ser adicionado
  *  @return Ponteiro para a lista de materiais atualizada
  */
-static TINYOBJ_MATERIAL *tinyobj_material_add(TINYOBJ_MATERIAL *prev,
+static TinyObj_Material *tinyobj_material_add(TinyObj_Material *prev,
                                                 size_t num_materials,
-                                                TINYOBJ_MATERIAL *new_mat) {
-  TINYOBJ_MATERIAL *dst;
-  size_t num_bytes = sizeof(TINYOBJ_MATERIAL) * num_materials;
-  dst = (TINYOBJ_MATERIAL *)TINYOBJ_REALLOC_SIZED(
-                                      prev, num_bytes, num_bytes + sizeof(TINYOBJ_MATERIAL));
+                                                TinyObj_Material *new_mat) {
+  TinyObj_Material *dst;
+  size_t num_bytes = sizeof(TinyObj_Material) * num_materials;
+  dst = (TinyObj_Material *)TINYOBJ_REALLOC_SIZED(
+                                      prev, num_bytes, num_bytes + sizeof(TinyObj_Material));
 
   dst[num_materials] = (*new_mat); /* Just copy pointer for char* members */
   return dst;
@@ -1039,20 +1039,20 @@ static int is_line_ending(const char *p, size_t i, size_t end_i) {
  *  @param pos Posição inicial da linha no buffer.
  *  @param len Comprimento da linha.
 */
-typedef struct LINE_INFO {
+typedef struct Line_Info {
   size_t pos;   // Posição inicial da linha no buffer
   size_t len;   // Comprimento da linha
-} LINE_INFO;
+} Line_Info;
 
 /** Analisa um buffer de texto para extrair informações sobre as linhas, incluindo a posição inicial e o comprimento de cada linha.
  *  @param buf Ponteiro para o buffer de texto a ser analisado.
  *  @param buf_len Tamanho do buffer de texto.
- *  @param line_infos Ponteiro para um array de LINE_INFO onde as informações das linhas serão armazenadas. O array será alocado dinamicamente dentro da função.
+ *  @param line_infos Ponteiro para um array de Line_Info onde as informações das linhas serão armazenadas. O array será alocado dinamicamente dentro da função.
  *  @param num_lines Ponteiro para uma variável onde o número de linhas encontradas será armazenado.
  *  @return Código de erro indicando o resultado da operação (0 para sucesso, TINYOBJ_ERROR_EMPTY se o buffer estiver vazio, ou outro código de erro em caso de falha).
  *  @note O array `line_infos` deve ser liberado usando TINYOBJ_FREE quando não for mais necessário.
 */
-static int get_line_infos(const char *buf, size_t buf_len, LINE_INFO **line_infos, size_t *num_lines) {
+static int get_line_infos(const char *buf, size_t buf_len, Line_Info **line_infos, size_t *num_lines) {
   size_t i = 0;
   size_t end_idx = buf_len;
   size_t prev_pos = 0;
@@ -1076,7 +1076,7 @@ static int get_line_infos(const char *buf, size_t buf_len, LINE_INFO **line_info
 
   if (*num_lines == 0) return TINYOBJ_ERROR_EMPTY;
 
-  *line_infos = (LINE_INFO *)TINYOBJ_MALLOC(sizeof(LINE_INFO) * (*num_lines));
+  *line_infos = (Line_Info *)TINYOBJ_MALLOC(sizeof(Line_Info) * (*num_lines));
 
   /* Fill line infos. */
   for (i = 0; i < end_idx; i++) {
@@ -1096,7 +1096,7 @@ static int get_line_infos(const char *buf, size_t buf_len, LINE_INFO **line_info
 }
 
 /** Carrega um arquivo MTL e indexa os materiais encontrados, armazenando-os em uma tabela hash para acesso rápido.
- *  @param materials_out Ponteiro para um array de TINYOBJ_MATERIAL onde os materiais carregados serão armazenados. O array será alocado dinamicamente dentro da função.
+ *  @param materials_out Ponteiro para um array de TinyObj_Material onde os materiais carregados serão armazenados. O array será alocado dinamicamente dentro da função.
  *  @param num_materials_out Ponteiro para uma variável onde o número de materiais carregados será armazenado.
  *  @param mtl_filename Nome do arquivo MTL a ser carregado.
  *  @param obj_filename Nome do arquivo OBJ associado ao MTL, usado para resolver caminhos relativos.
@@ -1106,17 +1106,17 @@ static int get_line_infos(const char *buf, size_t buf_len, LINE_INFO **line_info
  *  @return Código de erro indicando o resultado da operação (0 para sucesso, ou outro código de erro em caso de falha).
  *  @note O array `materials_out` deve ser liberado usando TINYOBJ_FREE quando não for mais necessário. Os materiais individuais dentro do array também devem ser liberados conforme necessário.
 */
-static int tinyobj_load_and_index_mtl_file(TINYOBJ_MATERIAL **materials_out,
+static int tinyobj_load_and_index_mtl_file(TinyObj_Material **materials_out,
                                             size_t *num_materials_out,
                                             const char *mtl_filename, const char *obj_filename, File_reader_callback file_reader, void *ctx,
-                                            HASH_TABLE* material_table) {
-  TINYOBJ_MATERIAL material;
+                                            Hash_Table* material_table) {
+  TinyObj_Material material;
   size_t num_materials = 0;
-  TINYOBJ_MATERIAL *materials = NULL;
+  TinyObj_Material *materials = NULL;
   int has_previous_material = 0;
   const char *line_end = NULL;
   size_t num_lines = 0;
-  LINE_INFO *line_infos = NULL;
+  Line_Info *line_infos = NULL;
   size_t i = 0;
   char *buf = NULL;
   size_t len = 0;
@@ -1360,7 +1360,7 @@ static int tinyobj_load_and_index_mtl_file(TINYOBJ_MATERIAL **materials_out,
 }
 
 /** Carrega um arquivo MTL e indexa os materiais encontrados, armazenando-os em uma tabela hash para acesso rápido.
- *  @param materials_out Ponteiro para um array de TINYOBJ_MATERIAL onde os materiais carregados serão armazenados. O array será alocado dinamicamente dentro da função.
+ *  @param materials_out Ponteiro para um array de TinyObj_Material onde os materiais carregados serão armazenados. O array será alocado dinamicamente dentro da função.
  *  @param num_materials_out Ponteiro para uma variável onde o número de materiais carregados será armazenado.
  *  @param mtl_filename Nome do arquivo MTL a ser carregado.
  *  @param obj_filename Nome do arquivo OBJ associado ao MTL, usado para resolver caminhos relativos.
@@ -1369,7 +1369,7 @@ static int tinyobj_load_and_index_mtl_file(TINYOBJ_MATERIAL **materials_out,
  *  @return Código de erro indicando o resultado da operação (0 para sucesso, ou outro código de erro em caso de falha).
  *  @note O array `materials_out` deve ser liberado usando TINYOBJ_FREE quando não for mais necessário. Os materiais individuais dentro do array também devem ser liberados conforme necessário.
 */
-int tinyobj_load_mtl(TINYOBJ_MATERIAL **materials_out,
+int tinyobj_load_mtl(TinyObj_Material **materials_out,
                            size_t *num_materials_out,
                            const char *mtl_filename, const char *obj_filename, File_reader_callback file_reader,
                            void *ctx) {
@@ -1377,7 +1377,7 @@ int tinyobj_load_mtl(TINYOBJ_MATERIAL **materials_out,
 }
 
 /** Command types para representar os diferentes tipos de comandos em um arquivo OBJ */
-typedef enum COMAND_TYPE {
+typedef enum Command_Type {
   COMMAND_EMPTY,    // Linha vazia ou comentário
   COMMAND_V,        // Vertex
   COMMAND_VN,       // Normal
@@ -1387,16 +1387,16 @@ typedef enum COMAND_TYPE {
   COMMAND_O,        // Object name
   COMMAND_USEMTL,   // Use material
   COMMAND_MTLLIB    // Material library 
-} COMAND_TYPE;
+} Command_Type;
 
 /** Estrutura para representar um comando em um arquivo OBJ */
-typedef struct COMAND {
+typedef struct Command {
   float vx, vy, vz;   // Coordenadas do vértice
   float nx, ny, nz;   // Coordenadas da normal
   float tx, ty;       // Coordenadas da textura
 
   /* @todo { Use dynamic array } */
-  TINYOBJ_VERTEX_INDEX f[TINYOBJ_MAX_FACES_PER_F_LINE];
+  TinyObj_Vertex_Index f[TINYOBJ_MAX_FACES_PER_F_LINE];
   size_t num_f;   // Número de vértices na face (para comandos de face)
 
   int f_num_verts[TINYOBJ_MAX_FACES_PER_F_LINE];
@@ -1418,17 +1418,17 @@ typedef struct COMAND {
   unsigned int mtllib_name_len;   // Comprimento do nome do arquivo de biblioteca de materiais
   int pad3;                       // Padding para alinhamento de 4 bytes
 
-  COMAND_TYPE type; // Tipo do comando
-} COMAND;
+  Command_Type type; // Tipo do comando
+} Command;
 
-/** Analisa uma linha de um arquivo OBJ e preenche uma estrutura COMAND com as informações extraídas.
- *  @param command Ponteiro para a estrutura COMAND onde as informações extraídas serão armazenadas.
+/** Analisa uma linha de um arquivo OBJ e preenche uma estrutura Command com as informações extraídas.
+ *  @param command Ponteiro para a estrutura Command onde as informações extraídas serão armazenadas.
  *  @param p Ponteiro para a linha a ser analisada.
  *  @param p_len Comprimento da linha a ser analisada.
  *  @param triangulate Indica se as faces devem ser trianguladas (1 para sim, 0 para não).
  *  @return 1 se a linha foi analisada com sucesso e um comando válido foi preenchido, ou 0 caso contrário.
  */
-static int parseLine(COMAND *command, const char *p, size_t p_len,
+static int parseLine(Command *command, const char *p, size_t p_len,
                      int triangulate) {
   char linebuf[4096];
   const char *token;
@@ -1492,12 +1492,12 @@ static int parseLine(COMAND *command, const char *p, size_t p_len,
   if (token[0] == 'l' && IS_SPACE((token[1]))) {
     size_t num_f = 0;
     
-    TINYOBJ_VERTEX_INDEX f[2];
+    TinyObj_Vertex_Index f[2];
     token += 2;
     skip_space(&token);
 
     while (!IS_NEW_LINE(token[0])) {
-      TINYOBJ_VERTEX_INDEX vi = parseRawTriple(&token);
+      TinyObj_Vertex_Index vi = parseRawTriple(&token);
       skip_space_and_cr(&token);
 
       f[num_f] = vi;
@@ -1519,12 +1519,12 @@ static int parseLine(COMAND *command, const char *p, size_t p_len,
   if (token[0] == 'f' && IS_SPACE((token[1]))) {
     size_t num_f = 0;
 
-    TINYOBJ_VERTEX_INDEX f[TINYOBJ_MAX_FACES_PER_F_LINE];
+    TinyObj_Vertex_Index f[TINYOBJ_MAX_FACES_PER_F_LINE];
     token += 2;
     skip_space(&token);
 
     while (!IS_NEW_LINE(token[0])) {
-      TINYOBJ_VERTEX_INDEX vi = parseRawTriple(&token);
+      TinyObj_Vertex_Index vi = parseRawTriple(&token);
       skip_space_and_cr(&token);
 
       f[num_f] = vi;
@@ -1537,9 +1537,9 @@ static int parseLine(COMAND *command, const char *p, size_t p_len,
       size_t k;
       size_t n = 0;
 
-      TINYOBJ_VERTEX_INDEX i0 = f[0];
-      TINYOBJ_VERTEX_INDEX i1;
-      TINYOBJ_VERTEX_INDEX i2 = f[1];
+      TinyObj_Vertex_Index i0 = f[0];
+      TinyObj_Vertex_Index i1;
+      TinyObj_Vertex_Index i2 = f[1];
 
       assert(3 * num_f < TINYOBJ_MAX_FACES_PER_F_LINE);
 
@@ -1685,13 +1685,13 @@ static char *generate_mtl_filename(const char *obj_filename,
   return mtl_filename;
 }
 
-int tinyobj_load_obj(TINYOBJ_ATTRIB *attrib, TINYOBJ_SHAPE **shapes,
-                      size_t *num_shapes, TINYOBJ_MATERIAL **materials_out,
+int tinyobj_load_obj(TinyObj_Attrib *attrib, TinyObj_Shape **shapes,
+                      size_t *num_shapes, TinyObj_Material **materials_out,
                       size_t *num_materials_out, const char *obj_filename,
                       File_reader_callback file_reader, void *ctx,
                       unsigned int flags) {
-  LINE_INFO *line_infos = NULL;
-  COMAND *commands = NULL;
+  Line_Info *line_infos = NULL;
+  Command *commands = NULL;
   size_t num_lines = 0;
 
   size_t num_v = 0;
@@ -1702,10 +1702,10 @@ int tinyobj_load_obj(TINYOBJ_ATTRIB *attrib, TINYOBJ_SHAPE **shapes,
 
   int mtllib_line_index = -1;
 
-  TINYOBJ_MATERIAL *materials = NULL;
+  TinyObj_Material *materials = NULL;
   size_t num_materials = 0;
 
-  HASH_TABLE material_table;
+  Hash_Table material_table;
 
   char *buf = NULL;
   size_t len = 0;
@@ -1726,7 +1726,7 @@ int tinyobj_load_obj(TINYOBJ_ATTRIB *attrib, TINYOBJ_SHAPE **shapes,
     return TINYOBJ_ERROR_EMPTY;
   }
 
-  commands = (COMAND *)TINYOBJ_MALLOC(sizeof(COMAND) * num_lines);
+  commands = (Command *)TINYOBJ_MALLOC(sizeof(Command) * num_lines);
 
   create_hash_table(HASH_TABLE_DEFAULT_SIZE, &material_table);
 
@@ -1811,8 +1811,8 @@ int tinyobj_load_obj(TINYOBJ_ATTRIB *attrib, TINYOBJ_SHAPE **shapes,
     attrib->num_normals = (unsigned int)num_vn;
     attrib->texcoords = (float *)TINYOBJ_MALLOC(sizeof(float) * num_vt * 2);
     attrib->num_texcoords = (unsigned int)num_vt;
-    attrib->faces = (TINYOBJ_VERTEX_INDEX *)TINYOBJ_MALLOC(
-                                                     sizeof(TINYOBJ_VERTEX_INDEX) * num_f);
+    attrib->faces = (TinyObj_Vertex_Index *)TINYOBJ_MALLOC(
+                                                     sizeof(TinyObj_Vertex_Index) * num_f);
     attrib->num_faces = (unsigned int)num_f;
     attrib->face_num_verts = (int *)TINYOBJ_MALLOC(sizeof(int) * num_faces);
     attrib->material_ids = (int *)TINYOBJ_MALLOC(sizeof(int) * num_faces);
@@ -1868,7 +1868,7 @@ int tinyobj_load_obj(TINYOBJ_ATTRIB *attrib, TINYOBJ_SHAPE **shapes,
       } else if (commands[i].type == COMMAND_F) {
         size_t k = 0;
         for (k = 0; k < commands[i].num_f; k++) {
-          TINYOBJ_VERTEX_INDEX vi = commands[i].f[k];
+          TinyObj_Vertex_Index vi = commands[i].f[k];
           int v_idx = fixIndex(vi.v_idx, v_count);
           int vn_idx = fixIndex(vi.vn_idx, n_count);
           int vt_idx = fixIndex(vi.vt_idx, t_count);
@@ -1901,7 +1901,7 @@ int tinyobj_load_obj(TINYOBJ_ATTRIB *attrib, TINYOBJ_SHAPE **shapes,
     unsigned int prev_shape_name_len = 0;
     unsigned int prev_shape_face_offset = 0;
     unsigned int prev_face_offset = 0;
-    TINYOBJ_SHAPE prev_shape = {NULL, 0, 0};
+    TinyObj_Shape prev_shape = {NULL, 0, 0};
 
     /* Find the number of shapes in .obj */
     for (i = 0; i < num_lines; i++) {
@@ -1913,7 +1913,7 @@ int tinyobj_load_obj(TINYOBJ_ATTRIB *attrib, TINYOBJ_SHAPE **shapes,
     /* Allocate array of shapes with maximum possible size(+1 for unnamed
      * group/object).
      * Actual # of shapes found in .obj is determined in the later */
-    (*shapes) = (TINYOBJ_SHAPE*)TINYOBJ_MALLOC(sizeof(TINYOBJ_SHAPE) * (n + 1));
+    (*shapes) = (TinyObj_Shape*)TINYOBJ_MALLOC(sizeof(TinyObj_Shape) * (n + 1));
 
     for (i = 0; i < num_lines; i++) {
       if (commands[i].type == COMMAND_O || commands[i].type == COMMAND_G) {
@@ -1993,7 +1993,7 @@ int tinyobj_load_obj(TINYOBJ_ATTRIB *attrib, TINYOBJ_SHAPE **shapes,
   return TINYOBJ_SUCCESS;
 }
 
-void tinyobj_attrib_init(TINYOBJ_ATTRIB *attrib) {
+void tinyobj_attrib_init(TinyObj_Attrib *attrib) {
   attrib->vertices = NULL;
   attrib->num_vertices = 0;
   attrib->normals = NULL;
@@ -2007,7 +2007,7 @@ void tinyobj_attrib_init(TINYOBJ_ATTRIB *attrib) {
   attrib->material_ids = NULL;
 }
 
-void tinyobj_attrib_free(TINYOBJ_ATTRIB *attrib) {
+void tinyobj_attrib_free(TinyObj_Attrib *attrib) {
   if (attrib->vertices) TINYOBJ_FREE(attrib->vertices);
   if (attrib->normals) TINYOBJ_FREE(attrib->normals);
   if (attrib->texcoords) TINYOBJ_FREE(attrib->texcoords);
@@ -2016,7 +2016,7 @@ void tinyobj_attrib_free(TINYOBJ_ATTRIB *attrib) {
   if (attrib->material_ids) TINYOBJ_FREE(attrib->material_ids);
 }
 
-void tinyobj_shapes_free(TINYOBJ_SHAPE *shapes, size_t num_shapes) {
+void tinyobj_shapes_free(TinyObj_Shape *shapes, size_t num_shapes) {
   size_t i;
   if (shapes == NULL) return;
 
@@ -2027,7 +2027,7 @@ void tinyobj_shapes_free(TINYOBJ_SHAPE *shapes, size_t num_shapes) {
   TINYOBJ_FREE(shapes);
 }
 
-void tinyobj_materials_free(TINYOBJ_MATERIAL *materials,
+void tinyobj_materials_free(TinyObj_Material *materials,
                             size_t num_materials) {
   size_t i;
   if (materials == NULL) return;
@@ -2048,7 +2048,7 @@ void tinyobj_materials_free(TINYOBJ_MATERIAL *materials,
   TINYOBJ_FREE(materials);
 }
 
-Vec3 tinyobj_attrib_get_vertex(const TINYOBJ_ATTRIB *attrib, int index) {
+Vec3 tinyobj_attrib_get_vertex(const TinyObj_Attrib *attrib, int index) {
   Vec3 v = { 0.0f, 0.0f, 0.0f };
 
   if (!attrib || !attrib->vertices || index < 0 || (unsigned int)index >= attrib->num_vertices) {
@@ -2062,7 +2062,7 @@ Vec3 tinyobj_attrib_get_vertex(const TINYOBJ_ATTRIB *attrib, int index) {
   return v;
 }
 
-void tinyobj_attrib_compute_bounds(const TINYOBJ_ATTRIB *attrib,
+void tinyobj_attrib_compute_bounds(const TinyObj_Attrib *attrib,
                                    Vec3 *min_v, Vec3 *max_v) {
   if (!min_v || !max_v) {
     return;
@@ -2088,7 +2088,7 @@ void tinyobj_attrib_compute_bounds(const TINYOBJ_ATTRIB *attrib,
   }
 }
 
-Vec3 tinyobj_material_color(const TINYOBJ_MATERIAL *materials,
+Vec3 tinyobj_material_color(const TinyObj_Material *materials,
                             size_t num_materials, int material_id) {
   if (materials && material_id >= 0 && (size_t)material_id < num_materials) {
     return (Vec3){

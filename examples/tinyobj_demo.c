@@ -46,11 +46,11 @@ int main(int argc, char **argv) {
         output_path = default_output_path;
     }
 
-    TINYOBJ_ATTRIB attrib = { 0 };
+    TinyObj_Attrib attrib = { 0 };
     tinyobj_attrib_init(&attrib);
 
-    TINYOBJ_SHAPE *shapes = NULL;
-    TINYOBJ_MATERIAL *materials = NULL;
+    TinyObj_Shape *shapes = NULL;
+    TinyObj_Material *materials = NULL;
     size_t num_shapes = 0;
     size_t num_materials = 0;
 
