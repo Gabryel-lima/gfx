@@ -10,9 +10,10 @@
 #include "tinyobj_loader.h"
 
 #ifndef TINYOBJ_UTILS_PATH_MAX
-#ifdef PATH_MAX
-#define TINYOBJ_UTILS_PATH_MAX PATH_MAX
+#ifdef PATH_MAX // Usado para definir o tamanho máximo de caminhos em sistemas POSIX
+#define TINYOBJ_UTILS_PATH_MAX PATH_MAX // Se PATH_MAX estiver definido, use esse valor para o tamanho máximo de caminhos
 #else
+// Se PATH_MAX não estiver definido, defina um valor padrão para o tamanho máximo de caminhos
 #define TINYOBJ_UTILS_PATH_MAX 4096
 #endif
 #endif
