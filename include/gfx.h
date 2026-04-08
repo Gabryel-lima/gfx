@@ -9,7 +9,7 @@
  * @file include/gfx.h
  */
 
-/** Tipo opaco para uma malha 3D. */
+/** Tipo opaco para uma malha 3D carregada de arquivo. */
 typedef struct Mesh Mesh;
 /** Tipo opaco para um material de render. */
 typedef struct Material Material;

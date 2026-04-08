@@ -2,10 +2,6 @@
 
 #include "gfx.h"
 
-// Tipos opacos para compilar com a API mínima
-struct Mesh { int dummy; };
-struct Material { int dummy; };
-
 // Implementação de backend de stub (apenas imprime mensagens)
 
 static void stub_draw_mesh(void *ctx, Mesh *m, Mat4 transform, Material *mat) {
