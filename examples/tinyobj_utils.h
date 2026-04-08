@@ -20,7 +20,7 @@
 /**
  * @brief Helpers locais do exemplo tinyobj_demo para caminho, IO e resumo.
  * @author Gabryel-lima
- * @date 2026-05-02
+ * @date 2026-03-02
  * @file examples/tinyobj_utils.h
  */
 

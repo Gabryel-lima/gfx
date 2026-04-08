@@ -6,7 +6,7 @@
 /**
  * @brief Suporte esboçado para carregamento e liberação de malhas.
  * @author Gabryel-lima
- * @date 2026-05-02
+ * @date 2026-03-02
  * @file src/internal/mesh.h
 */
 

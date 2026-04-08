@@ -3,7 +3,7 @@
 /**
  * @brief Parser OBJ/MTL em formato header-only com helpers de preview; a implementação é habilitada por src/tinyobj_loader.c.
  * @author Gabryel-lima
- * @date 2026-05-01
+ * @date 2026-03-01
  * @file include/tinyobj_loader.h
  */
 

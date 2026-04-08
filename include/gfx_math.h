@@ -5,7 +5,7 @@
 /**
  * @brief Tipos matemáticos e estruturas básicas compartilhadas pelo sistema gráfico.
  * @author Gabryel-lima
- * @date 2026-05-02
+ * @date 2026-03-02
  * @file include/gfx_math.h
  */
 

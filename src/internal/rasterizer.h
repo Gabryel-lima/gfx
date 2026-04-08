@@ -8,7 +8,7 @@
 /**
  * @brief Rasterização software de triângulos para o caminho CPU.
  * @author Gabryel-lima
- * @date 2026-05-02
+ * @date 2026-03-02
  * @file include/rasterizer.h
 */
 

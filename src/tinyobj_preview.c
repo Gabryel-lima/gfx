@@ -5,7 +5,7 @@
 /** @brief Esboço de visualização de modelos 
  *  3D usando TinyOBJ e rasterização. 
  *  @author Gabriel-lima
- *  @date 2026-05-02
+ *  @date 2026-03-02
  *  @file src/tinyobj_preview.c
  *  @note Este arquivo é um esboço inicial para renderizar 
  *  um modelo 3D carregado com TinyOBJ usando uma 

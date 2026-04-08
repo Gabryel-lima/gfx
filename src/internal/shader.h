@@ -3,7 +3,7 @@
 /**
  * @brief Suporte esboçado para criação e destruição de objetos Shader.
  * @author Gabryel-lima
- * @date 2026-05-02
+ * @date 2026-03-02
  * @file src/internal/shader.h
 */
 

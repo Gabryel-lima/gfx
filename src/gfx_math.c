@@ -5,7 +5,7 @@
 /** @brief Implementações simples de funções matemáticas 
  *  para evitar erros de link quando a libm não está vinculada. 
  *  @author Gabryel-lima
- *  @date 2026-05-02
+ *  @date 2026-03-02
  *  @file src/gfx_math.c
  *  @note Estas funções são pequenas e portáteis.
 */

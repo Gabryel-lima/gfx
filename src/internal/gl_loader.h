@@ -3,7 +3,7 @@
 /**
  * @brief Carregador mínimo de símbolos OpenGL via dlopen/dlsym.
  * @author Gabryel-lima
- * @date 2026-05-02
+ * @date 2026-03-02
  * @file src/internal/gl_loader.h
  */
 

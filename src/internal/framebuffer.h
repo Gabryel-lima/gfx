@@ -7,7 +7,7 @@
 /**
  * @brief Suporte para framebuffer mapeado e buffers RGBA em memória.
  * @author Gabryel-lima
- * @date 2026-05-02
+ * @date 2026-03-02
  * @file src/internal/framebuffer.h
 */
 

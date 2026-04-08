@@ -3,7 +3,7 @@
 /**
  * @brief Wrappers mínimos para X11 e GLX carregados dinamicamente.
  * @author Gabryel-lima
- * @date 2026-05-02
+ * @date 2026-03-02
  * @file src/internal/x11_platform.h
 */
 
