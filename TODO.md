@@ -53,11 +53,21 @@ Backlog vivo para ir fechando as partes que ainda faltam até o projeto ficar co
 - [x] Manter exemplos e headers públicos alinhados com o contrato real.
 
 ## Critério de pronto
-- [ ] `cmake --build build` conclui sem erros.
-- [ ] `ctest` ou o alvo equivalente executa a suíte sem falhas.
-- [ ] `gfx_demo` roda como smoke test da fachada pública.
-- [ ] `tinyobj_demo` carrega um OBJ e gera a prévia PPM sem intervenção extra.
+- [x] `cmake --build build` conclui sem erros.
+- [x] `ctest` ou o alvo equivalente executa a suíte sem falhas.
+- [x] `gfx_demo` roda como smoke test da fachada pública.
+- [x] `tinyobj_demo` carrega um OBJ e gera a prévia PPM sem intervenção extra.
 - [ ] O caminho GPU deixa de ser esboço e passa a funcionar de ponta a ponta.
+	- [ ] Implementar `gfx_platform_window_draw_mesh` em `gpu/linux_window.c` com OpenGL real.
+	- [ ] Implementar `gfx_platform_window_set_camera` em `gpu/linux_window.c` com matrizes de vista/projeção.
+	- [ ] Integrar upload de malhas, shaders e descarte dos recursos GL no backend de janela.
+	- [ ] Fazer `examples/window_demo.c` desenhar uma malha real em vez de apenas limpar a tela.
+	- [ ] Adicionar texturas com correção perspectiva.
+	- [ ] Adicionar iluminação Phong.
+	- [ ] Adicionar sombras.
+	- [ ] Automatizar uma validação de saída do `gfx_window_demo` sob Xvfb.
+	- [ ] Avaliar um backend Wayland.
+	- [ ] Avaliar suporte Windows/WGL.
 
 ## Notas
 - O foco inicial deve ser fechar os stubs e os testes; documentação vem logo depois para não cristalizar promessas falsas.
