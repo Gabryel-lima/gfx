@@ -12,9 +12,12 @@
 #define GFX_GL_LINK_STATUS     0x8B82u
 #define GFX_GL_INFO_LOG_LENGTH 0x8B84u
 
+/**
+ * @brief Compila e destroi programas GLSL usados pelo backend GPU.
+ */
 struct Shader {
-    GLProcs gl;
-    GLuint program;
+    GLProcs gl;     /**< Tabela de funcoes GL carregadas para este programa. */
+    GLuint program; /**< Identificador do programa GLSL compilado. */
 };
 
 static int gfx_shader_has_required_procs(const GLProcs *gl) {

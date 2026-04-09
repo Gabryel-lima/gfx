@@ -40,6 +40,7 @@ add_executable(gfx_tests
     cpu/framebuffer.c
     cpu/rasterizer.c
     gpu/gl_loader.c
+    gpu/mesh.c
     gpu/x11_platform.c
     src/gfx_math.c
     src/stubs.c
@@ -58,16 +59,25 @@ add_test(NAME gfx_tests COMMAND gfx_tests)
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
     add_executable(gfx_window_demo
         examples/window_demo.c
+        gpu/mesh.c
         gpu/linux_window.c
         gpu/gl_loader.c
         gpu/x11_platform.c
         src/gfx_math.c
         src/stubs.c
+        src/tinyobj_loader.c
     )
 
     target_include_directories(gfx_window_demo PRIVATE
         ${GFX_PUBLIC_INCLUDE_DIR}
         ${GFX_INTERNAL_INCLUDE_DIR}
     )
-    target_link_libraries(gfx_window_demo PRIVATE dl)
+    target_link_libraries(gfx_window_demo PRIVATE dl m)
+
+    find_program(XVFB_RUN xvfb-run)
+    if (XVFB_RUN)
+        add_test(NAME gfx_window_demo_smoke COMMAND ${XVFB_RUN} -a $<TARGET_FILE:gfx_window_demo>)
+    elseif(DEFINED ENV{DISPLAY} AND NOT "$ENV{DISPLAY}" STREQUAL "")
+        add_test(NAME gfx_window_demo_smoke COMMAND $<TARGET_FILE:gfx_window_demo>)
+    endif()
 endif()

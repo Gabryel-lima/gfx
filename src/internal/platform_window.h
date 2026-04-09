@@ -9,7 +9,8 @@
  * @file src/internal/platform_window.h
  */
 
-typedef struct PlatformWindow PlatformWindow;  // Declaração opaca para a estrutura de janela, definida em platform_window.c
+/** Declaração opaca para a estrutura de janela, definida em platform_window.c. */
+typedef struct PlatformWindow PlatformWindow;
 
 /** Cria uma janela nativa Linux com contexto GLX 
  *  já associado. 
@@ -66,6 +67,7 @@ void gfx_platform_window_set_clear_color(PlatformWindow *window,
 
 /** Retorna o contexto público que despacha para a janela. 
  *  @param window Ponteiro para a janela que deve fornecer o contexto.
- *  @return Ponteiro para o contexto público associado à janela, ou NULL em caso de
+ *  @return Ponteiro para o contexto público associado à janela, ou NULL em caso de erro.
+ *  @note O ponteiro retornado pertence à janela e só é válido enquanto ela existir.
 */
 GfxContext *gfx_platform_window_context(PlatformWindow *window);

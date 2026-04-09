@@ -185,6 +185,8 @@ A superfície estável do projeto está em `include/gfx.h`, `include/gfx_math.h`
 - `GLProcs`, `gfx_gl_load`
 - `PlatformGL`, `gfx_platform_gl_init`, `gfx_platform_gl_close`
 - `gfx_mesh_load`, `gfx_mesh_free`
+- `gfx_mesh_vertex_count`, `gfx_mesh_triangle_count`
+- `gfx_mesh_positions`, `gfx_mesh_triangle_colors`
 - `gfx_shader_create_from_source`, `gfx_shader_destroy`
 
 ### Suporte de janela Linux em `src/internal/platform_window.h`
@@ -193,6 +195,7 @@ A superfície estável do projeto está em `include/gfx.h`, `include/gfx_math.h`
 - `gfx_platform_window_set_clear_color`, `gfx_platform_window_context`
 
 Observação: esses helpers já executam trabalho real de carregamento e destruição, e a camada de janela Linux agora também existe como backend mínimo de apresentação. O pipeline GPU completo ainda não está pronto.
+O backend de janela também cacheia uploads de malha por `Mesh`, calcula view/projection a partir da câmera e usa um shader GL simples para desenhar o modelo triangulado da demo.
 
 ### Parser OBJ/MTL em `include/tinyobj_loader.h`
 - `tinyobj_load_obj`, `tinyobj_load_mtl`
@@ -254,7 +257,9 @@ O `CMakeLists.txt` gera três alvos principais: `gfx_demo`, `tinyobj_demo` e `gf
 
 - `./build/gfx_demo` executa o smoke test da fachada pública usando `gfx_get_stub_backend()`.
 - `./build/tinyobj_demo [modelo.obj] [saida.ppm]` carrega OBJ/MTL e grava uma prévia em PPM; se nenhum argumento for passado, ele resolve caminhos padrão a partir do diretório do executável.
-- `./build/gfx_window_demo` abre uma janela nativa Linux com contexto GLX e apresenta frames simples; em ambiente headless, rode-o sob `xvfb-run`.
+- `./build/gfx_window_demo` abre uma janela nativa Linux com contexto GLX, carrega a triangle OBJ incluída e apresenta frames OpenGL reais; em ambiente headless, rode-o sob `xvfb-run` ou outro servidor X disponível.
+
+O `ctest` também registra `gfx_window_demo_smoke`, que valida a execução do demo de janela no host atual ou via `xvfb-run` quando disponível.
 
 ## ⚙️ Dependências em tempo de execução
 
@@ -291,7 +296,6 @@ O `CMakeLists.txt` gera três alvos principais: `gfx_demo`, `tinyobj_demo` e `gf
 - Adicionar texturas com correção perspectiva
 - Adicionar iluminação Phong
 - Adicionar sombras
-- Expandir a renderização do backend de janela para desenhar malhas reais
 - Avaliar um backend Wayland
 - Avaliar suporte Windows/WGL
 

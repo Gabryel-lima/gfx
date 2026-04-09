@@ -12,6 +12,7 @@
 #include "gfx.h"
 #include "tinyobj_loader.h"
 #include "internal/gl_loader.h"
+#include "internal/mesh.h"
 #include "internal/framebuffer.h"
 #include "internal/rasterizer.h"
 #include "internal/x11_platform.h"
@@ -188,6 +189,55 @@ static int test_public_facade(void) {
         return 1;
     }
 
+    return 0;
+}
+
+static int test_mesh_loader(void) {
+    Mesh *mesh = NULL;
+    const Vec3 *positions;
+    const Vec3 *triangle_colors;
+
+    mesh = gfx_mesh_load("../examples/models/triangle.obj");
+    if (!mesh) {
+        mesh = gfx_mesh_load("examples/models/triangle.obj");
+    }
+
+    if (!mesh) {
+        fprintf(stderr, "gfx_mesh_load failed for bundled triangle OBJ\n");
+        return 1;
+    }
+
+    if (gfx_mesh_vertex_count(mesh) != 3U || gfx_mesh_triangle_count(mesh) != 1U) {
+        fprintf(stderr, "unexpected mesh counts\n");
+        gfx_mesh_free(mesh);
+        return 1;
+    }
+
+    positions = gfx_mesh_positions(mesh);
+    triangle_colors = gfx_mesh_triangle_colors(mesh);
+    if (!positions || !triangle_colors) {
+        fprintf(stderr, "mesh accessors returned NULL\n");
+        gfx_mesh_free(mesh);
+        return 1;
+    }
+
+    if (!float_close(positions[0].x, 0.0f, 0.0001f) ||
+        !float_close(positions[1].x, 1.0f, 0.0001f) ||
+        !float_close(positions[2].y, 1.0f, 0.0001f)) {
+        fprintf(stderr, "mesh positions do not match the bundled triangle\n");
+        gfx_mesh_free(mesh);
+        return 1;
+    }
+
+    if (!float_close(triangle_colors[0].x, 1.0f, 0.0001f) ||
+        !float_close(triangle_colors[0].y, 0.0f, 0.0001f) ||
+        !float_close(triangle_colors[0].z, 0.0f, 0.0001f)) {
+        fprintf(stderr, "triangle diffuse color mismatch\n");
+        gfx_mesh_free(mesh);
+        return 1;
+    }
+
+    gfx_mesh_free(mesh);
     return 0;
 }
 
@@ -517,6 +567,7 @@ int main(void) {
     int failures = 0;
 
     failures += run_test("public facade", test_public_facade);
+    failures += run_test("mesh loader", test_mesh_loader);
     failures += run_test("dynamic loaders", test_dynamic_loaders);
     failures += run_test("math framebuffer rasterizer", test_math_framebuffer_and_rasterizer);
     failures += run_test("tinyobj loader and preview", test_tinyobj_loader_and_preview);

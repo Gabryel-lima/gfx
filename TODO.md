@@ -58,14 +58,14 @@ Backlog vivo para ir fechando as partes que ainda faltam até o projeto ficar co
 - [x] `gfx_demo` roda como smoke test da fachada pública.
 - [x] `tinyobj_demo` carrega um OBJ e gera a prévia PPM sem intervenção extra.
 - [ ] O caminho GPU deixa de ser esboço e passa a funcionar de ponta a ponta.
-	- [ ] Implementar `gfx_platform_window_draw_mesh` em `gpu/linux_window.c` com OpenGL real.
-	- [ ] Implementar `gfx_platform_window_set_camera` em `gpu/linux_window.c` com matrizes de vista/projeção.
-	- [ ] Integrar upload de malhas, shaders e descarte dos recursos GL no backend de janela.
-	- [ ] Fazer `examples/window_demo.c` desenhar uma malha real em vez de apenas limpar a tela.
+	- [x] Implementar `gfx_platform_window_draw_mesh` em `gpu/linux_window.c` com OpenGL real.
+	- [x] Implementar `gfx_platform_window_set_camera` em `gpu/linux_window.c` com matrizes de vista/projeção.
+	- [x] Integrar upload de malhas, shaders e descarte dos recursos GL no backend de janela.
+	- [x] Fazer `examples/window_demo.c` desenhar uma malha real em vez de apenas limpar a tela.
 	- [ ] Adicionar texturas com correção perspectiva.
 	- [ ] Adicionar iluminação Phong.
 	- [ ] Adicionar sombras.
-	- [ ] Automatizar uma validação de saída do `gfx_window_demo` sob Xvfb.
+	- [x] Automatizar uma validação de saída do `gfx_window_demo` sob Xvfb.
 	- [ ] Avaliar um backend Wayland.
 	- [ ] Avaliar suporte Windows/WGL.
 

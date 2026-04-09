@@ -33,7 +33,7 @@ GLProcs gfx_gl_load(void) {
      *  @param gl Ponteiro para a estrutura GLProcs onde os ponteiros serão armazenados.
      *  @note Esta macro deve ser usada para cada função do OpenGL que deseja carregar.
      */
-    #define GL_LOAD(name)  do { \ 
+    #define GL_LOAD(name)  do { \
         dlerror(); \
         gl.name = (PFN_gl##name)dlsym(gl.handle, "gl" #name); \
         error = dlerror(); \
@@ -47,6 +47,8 @@ GLProcs gfx_gl_load(void) {
     GL_LOAD(ClearColor);
     GL_LOAD(Clear);
     GL_LOAD(Viewport);
+    GL_LOAD(Enable);
+    GL_LOAD(DepthFunc);
     GL_LOAD(CreateShader);
     GL_LOAD(ShaderSource);
     GL_LOAD(CompileShader);
@@ -54,12 +56,20 @@ GLProcs gfx_gl_load(void) {
     GL_LOAD(GetShaderInfoLog);
     GL_LOAD(DeleteShader);
     GL_LOAD(CreateProgram);
+    GL_LOAD(BindAttribLocation);
     GL_LOAD(AttachShader);
     GL_LOAD(LinkProgram);
     GL_LOAD(GetProgramiv);
     GL_LOAD(GetProgramInfoLog);
-    GL_LOAD(DeleteProgram); 
-    #undef GL_LOAD 
+    GL_LOAD(DeleteProgram);
+    GL_LOAD(UseProgram);
+    GL_LOAD(GetUniformLocation);
+    GL_LOAD(UniformMatrix4fv);
+    GL_LOAD(DeleteBuffers);
+    GL_LOAD(EnableVertexAttribArray);
+    GL_LOAD(VertexAttribPointer);
+    GL_LOAD(DrawArrays);
+    #undef GL_LOAD
 
     return gl;
 }
