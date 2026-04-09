@@ -11,8 +11,10 @@
 
 #include "gfx.h"
 #include "tinyobj_loader.h"
+#include "internal/gl_loader.h"
 #include "internal/framebuffer.h"
 #include "internal/rasterizer.h"
+#include "internal/x11_platform.h"
 
 typedef struct DispatchCounters {
     int begin_count;
@@ -183,6 +185,43 @@ static int test_public_facade(void) {
     backend = gfx_get_stub_backend();
     if (!backend.begin_frame || !backend.end_frame || !backend.draw_mesh || !backend.set_camera) {
         fprintf(stderr, "stub backend missing callbacks\n");
+        return 1;
+    }
+
+    return 0;
+}
+
+static int test_dynamic_loaders(void) {
+    GLProcs gl = gfx_gl_load();
+    PlatformGL platform = gfx_platform_gl_init();
+
+    if (!gl.handle || !gl.ClearColor || !gl.Clear || !gl.Viewport ||
+        !gl.CreateShader || !gl.CreateProgram || !gl.DeleteProgram) {
+        fprintf(stderr, "OpenGL runtime loader did not resolve the expected symbols\n");
+        gfx_gl_close(&gl);
+        gfx_platform_gl_close(&platform);
+        return 1;
+    }
+
+    gfx_gl_close(&gl);
+    if (gl.handle != NULL) {
+        fprintf(stderr, "gfx_gl_close did not reset the loader state\n");
+        gfx_platform_gl_close(&platform);
+        return 1;
+    }
+
+    if (!platform.x11 || !platform.gl || !platform.XOpenDisplay || !platform.XCloseDisplay ||
+        !platform.XCreateWindow || !platform.XFreeColormap || !platform.XPending ||
+        !platform.glXChooseVisual || !platform.glXCreateContext || !platform.glXMakeCurrent ||
+        !platform.glXSwapBuffers) {
+        fprintf(stderr, "X11/GLX runtime loader did not resolve the expected symbols\n");
+        gfx_platform_gl_close(&platform);
+        return 1;
+    }
+
+    gfx_platform_gl_close(&platform);
+    if (platform.x11 != NULL || platform.gl != NULL || platform.XOpenDisplay != NULL || platform.glXSwapBuffers != NULL) {
+        fprintf(stderr, "gfx_platform_gl_close did not reset the loader state\n");
         return 1;
     }
 
@@ -478,6 +517,7 @@ int main(void) {
     int failures = 0;
 
     failures += run_test("public facade", test_public_facade);
+    failures += run_test("dynamic loaders", test_dynamic_loaders);
     failures += run_test("math framebuffer rasterizer", test_math_framebuffer_and_rasterizer);
     failures += run_test("tinyobj loader and preview", test_tinyobj_loader_and_preview);
 

@@ -35,22 +35,22 @@ Backlog vivo para ir fechando as partes que ainda faltam até o projeto ficar co
 - [x] Cobrir pelo menos: math básica, parser OBJ/MTL, rasterização CPU e smoke test da fachada pública.
 
 ## P2 - Infraestrutura
-- [ ] Adicionar CI para buildar o projeto em Linux.
-- [ ] Validar builds em `Debug` e `Release`.
-- [ ] Documentar dependências de runtime e permissões necessárias para o caminho CPU.
-- [ ] Verificar se o carregamento dinâmico de `libGL.so.1` e `libX11.so` precisa de mensagens de erro melhores.
+- [x] Adicionar CI para buildar o projeto em Linux.
+- [x] Validar builds em `Debug` e `Release`.
+- [x] Documentar dependências de runtime e permissões necessárias para o caminho CPU.
+- [x] Verificar se o carregamento dinâmico de `libGL.so.1` e `libX11.so` precisa de mensagens de erro melhores.
 
 ## P2 - Janela nativa e portabilidade
-- [ ] Criar um backend de janela no Linux para renderizar em uma janela própria, com ciclo de apresentação e integração de eventos.
-- [ ] Separar a camada de plataforma para isolar criação de janela, contexto gráfico e apresentação do frame.
-- [ ] Validar o fluxo completo no Linux antes de iniciar a porta para Windows e macOS.
-- [ ] Preparar a abstração de plataforma para que a API pública de alto nível não precise mudar quando vier a portabilidade.
+- [x] Criar um backend de janela no Linux para renderizar em uma janela própria, com ciclo de apresentação e integração de eventos.
+- [x] Separar a camada de plataforma para isolar criação de janela, contexto gráfico e apresentação do frame.
+- [x] Validar o fluxo completo no Linux antes de iniciar a porta para Windows e macOS.
+- [x] Preparar a abstração de plataforma para que a API pública de alto nível não precise mudar quando vier a portabilidade.
 
 ## P2 - Documentação e consistência
-- [ ] Revisar o `README.md` depois que os stubs GPU forem implementados.
-- [ ] Atualizar a documentação quando a API pública mudar.
-- [ ] Garantir que a documentação não prometa recursos que ainda não existem.
-- [ ] Manter exemplos e headers públicos alinhados com o contrato real.
+- [x] Revisar o `README.md` depois que os stubs GPU forem implementados.
+- [x] Atualizar a documentação quando a API pública mudar.
+- [x] Garantir que a documentação não prometa recursos que ainda não existem.
+- [x] Manter exemplos e headers públicos alinhados com o contrato real.
 
 ## Critério de pronto
 - [ ] `cmake --build build` conclui sem erros.

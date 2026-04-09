@@ -21,11 +21,16 @@ typedef float         GLfloat; // Tipo float usado por OpenGL
 typedef char          GLchar; // Tipo char usado em strings GLSL
 /** Tipo inteiro para tamanhos e offsets de buffer */
 typedef signed long   GLsizeiptr; // Tipo para tamanhos/offsets de buffer
+/** Tipo para máscaras de bits OpenGL */
+typedef unsigned int  GLbitfield; // Máscaras de bits OpenGL
 
 /** Ponteiros para funções OpenGL carregadas dinamicamente */
 typedef void  (*PFN_glGenBuffers)    (GLint, GLuint*);                         // Gera buffers
 typedef void  (*PFN_glBindBuffer)    (GLenum, GLuint);                         // Faz bind em buffer
 typedef void  (*PFN_glBufferData)    (GLenum, GLsizeiptr, const void*, GLenum); // Envia dados ao buffer
+typedef void  (*PFN_glClearColor)     (GLfloat, GLfloat, GLfloat, GLfloat);     // Define a cor de limpeza
+typedef void  (*PFN_glClear)          (GLbitfield);                             // Limpa buffers
+typedef void  (*PFN_glViewport)       (GLint, GLint, GLsizei, GLsizei);         // Ajusta o viewport
 typedef GLuint(*PFN_glCreateShader)  (GLenum);                                 // Cria shader
 typedef void  (*PFN_glShaderSource)   (GLuint, GLsizei, const GLchar* const*, const GLint*); // Define a fonte do shader
 typedef void  (*PFN_glCompileShader)   (GLuint);                                // Compila shader
@@ -53,6 +58,9 @@ typedef struct GLProcs {
     PFN_glGenBuffers    GenBuffers; /**< Ponteiro para glGenBuffers */
     PFN_glBindBuffer    BindBuffer; /**< Ponteiro para glBindBuffer */
     PFN_glBufferData    BufferData; /**< Ponteiro para glBufferData */
+    PFN_glClearColor    ClearColor; /**< Ponteiro para glClearColor */
+    PFN_glClear         Clear;      /**< Ponteiro para glClear */
+    PFN_glViewport      Viewport;   /**< Ponteiro para glViewport */
     PFN_glCreateShader  CreateShader;/**< Ponteiro para glCreateShader */
     PFN_glShaderSource  ShaderSource; /**< Ponteiro para glShaderSource */
     PFN_glCompileShader CompileShader; /**< Ponteiro para glCompileShader */
@@ -72,3 +80,6 @@ typedef struct GLProcs {
  * @return GLProcs preenchido com os ponteiros disponíveis.
  */
 GLProcs gfx_gl_load(void);
+
+/** Libera a biblioteca dinâmica carregada por `gfx_gl_load`. */
+void gfx_gl_close(GLProcs *gl);

@@ -125,19 +125,21 @@ flowchart TD
 
 Detalhado em: suporte GPU e carregamento dinâmico.
 
-### 4. 🧩 Suporte GPU e carregamento dinâmico
+### 4. 🧩 Suporte GPU, janela Linux e carregamento dinâmico
 
-Os arquivos em `gpu/` são infraestrutura de integração. `gpu/gl_loader.c` e `gpu/x11_platform.c` resolvem um subconjunto pequeno de símbolos de `libGL.so.1` e `libX11.so` em runtime; `gpu/mesh.c` carrega OBJ/MTL em estruturas próprias e `gpu/shader.c` compila e destrói programas GLSL quando há contexto GL disponível. Ainda assim, esta visão continua sendo infraestrutura de backend, não um pipeline GPU completo.
+Os arquivos em `gpu/` formam a camada de infraestrutura de integração. `gpu/gl_loader.c` resolve os símbolos OpenGL usados pelo projeto em runtime; `gpu/x11_platform.c` carrega X11/GLX dinamicamente; `gpu/linux_window.c` monta a janela nativa Linux, processa eventos e apresenta os frames; `gpu/mesh.c` carrega OBJ/MTL em estruturas próprias e `gpu/shader.c` compila e destrói programas GLSL quando há contexto GL disponível. Isso ainda não é um pipeline GPU completo, mas já cobre a janela nativa e os blocos de suporte.
 
 ```mermaid
 flowchart TD
   subgraph GPU["Suporte GPU"]
     glapi[src/internal/gl_loader.h]
     x11api[src/internal/x11_platform.h]
+    windowapi[src/internal/platform_window.h]
     meshapi[src/internal/mesh.h]
     shaderapi[src/internal/shader.h]
     glimpl[gpu/gl_loader.c]
     x11impl[gpu/x11_platform.c]
+    windowimpl[gpu/linux_window.c]
     meshimpl[gpu/mesh.c]
     shaderimpl[gpu/shader.c]
   end
@@ -148,6 +150,8 @@ flowchart TD
   glapi --> glimpl --> libgl
   x11api --> x11impl --> libx11
   x11impl --> libgl
+  windowapi --> windowimpl --> libx11
+  windowimpl --> libgl
   meshapi --> meshimpl
   shaderapi --> shaderimpl
 ```
@@ -179,11 +183,16 @@ A superfície estável do projeto está em `include/gfx.h`, `include/gfx_math.h`
 
 ### Suporte GPU em `src/internal/gl_loader.h`, `src/internal/x11_platform.h`, `src/internal/mesh.h` e `src/internal/shader.h`
 - `GLProcs`, `gfx_gl_load`
-- `PlatformGL`, `gfx_platform_gl_init`
+- `PlatformGL`, `gfx_platform_gl_init`, `gfx_platform_gl_close`
 - `gfx_mesh_load`, `gfx_mesh_free`
 - `gfx_shader_create_from_source`, `gfx_shader_destroy`
 
-Observação: esses helpers já executam trabalho real de carregamento e destruição, mas a integração de backend GPU ainda depende de contexto GL e de uma camada de janela/apresentação que não existe neste repositório.
+### Suporte de janela Linux em `src/internal/platform_window.h`
+- `PlatformWindow`, `gfx_platform_window_create`, `gfx_platform_window_destroy`
+- `gfx_platform_window_pump_events`, `gfx_platform_window_should_close`
+- `gfx_platform_window_set_clear_color`, `gfx_platform_window_context`
+
+Observação: esses helpers já executam trabalho real de carregamento e destruição, e a camada de janela Linux agora também existe como backend mínimo de apresentação. O pipeline GPU completo ainda não está pronto.
 
 ### Parser OBJ/MTL em `include/tinyobj_loader.h`
 - `tinyobj_load_obj`, `tinyobj_load_mtl`
@@ -237,19 +246,23 @@ cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ```
 
-O `CMakeLists.txt` gera dois alvos principais: `gfx_demo` e `tinyobj_demo`. O `Makefile` da raiz apenas delega para esses passos.
+Troque `Release` por `Debug` quando quiser reproduzir a matriz de validação usada na CI.
+
+O `CMakeLists.txt` gera três alvos principais: `gfx_demo`, `tinyobj_demo` e `gfx_window_demo`. O `Makefile` da raiz apenas delega para esses passos.
 
 ## 🚀 Executando os exemplos
 
 - `./build/gfx_demo` executa o smoke test da fachada pública usando `gfx_get_stub_backend()`.
 - `./build/tinyobj_demo [modelo.obj] [saida.ppm]` carrega OBJ/MTL e grava uma prévia em PPM; se nenhum argumento for passado, ele resolve caminhos padrão a partir do diretório do executável.
+- `./build/gfx_window_demo` abre uma janela nativa Linux com contexto GLX e apresenta frames simples; em ambiente headless, rode-o sob `xvfb-run`.
 
 ## ⚙️ Dependências em tempo de execução
 
 - Linux, porque o projeto usa `/dev/fb0` e `linux/fb.h` no caminho CPU.
 - `libdl` no link, para `dlopen`/`dlsym`.
-- `libGL.so.1` e `libX11.so` apenas se você usar os módulos GPU.
-- Acesso ao framebuffer do sistema somente se a aplicação chamar `gfx_fb_open("/dev/fb0")`.
+- `libGL.so.1` e `libX11.so` para `gfx_window_demo` e para os módulos GPU de suporte.
+- Uma sessão X11 com `DISPLAY` válido para o backend de janela Linux; em modo headless, use `xvfb-run`.
+- Acesso ao framebuffer do sistema somente se a aplicação chamar `gfx_fb_open("/dev/fb0")`; normalmente isso exige root ou permissão no grupo `video`.
 
 ## 🔎 Notas técnicas
 
@@ -269,19 +282,16 @@ O `CMakeLists.txt` gera dois alvos principais: `gfx_demo` e `tinyobj_demo`. O `M
 - Rasterizador por software e z-buffer
 - Clipping (Sutherland–Hodgman)
 - Loader GL via `dlopen`
-- Janela X11 + contexto GLX
-- VAO/VBO management (GPU)
+- Backend de janela Linux + contexto GLX básico
 - Parser `.obj` próprio
 - Demos e exemplos
 
 ### 🔭 Próximos passos
 
-- Integrar um backend CPU completo por meio de uma API de alto nível
-- Completar a implementação de `gfx_mesh_load` e `gfx_mesh_free`
-- Completar `gfx_shader_create_from_source` e `gfx_shader_destroy`
 - Adicionar texturas com correção perspectiva
 - Adicionar iluminação Phong
 - Adicionar sombras
+- Expandir a renderização do backend de janela para desenhar malhas reais
 - Avaliar um backend Wayland
 - Avaliar suporte Windows/WGL
 

@@ -39,6 +39,8 @@ add_executable(gfx_tests
     cpu/fb0_platform.c
     cpu/framebuffer.c
     cpu/rasterizer.c
+    gpu/gl_loader.c
+    gpu/x11_platform.c
     src/gfx_math.c
     src/stubs.c
     src/tinyobj_loader.c
@@ -49,5 +51,23 @@ target_include_directories(gfx_tests PRIVATE
     ${GFX_PUBLIC_INCLUDE_DIR}
     ${GFX_INTERNAL_INCLUDE_DIR}
 )
+target_link_libraries(gfx_tests PRIVATE dl)
 
 add_test(NAME gfx_tests COMMAND gfx_tests)
+
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    add_executable(gfx_window_demo
+        examples/window_demo.c
+        gpu/linux_window.c
+        gpu/gl_loader.c
+        gpu/x11_platform.c
+        src/gfx_math.c
+        src/stubs.c
+    )
+
+    target_include_directories(gfx_window_demo PRIVATE
+        ${GFX_PUBLIC_INCLUDE_DIR}
+        ${GFX_INTERNAL_INCLUDE_DIR}
+    )
+    target_link_libraries(gfx_window_demo PRIVATE dl)
+endif()

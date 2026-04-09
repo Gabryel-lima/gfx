@@ -1,0 +1,40 @@
+name: Linux CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type:
+          - Debug
+          - Release
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake libgl1-mesa-dev libx11-dev xvfb
+
+      - name: Configure
+        run: cmake -S . -B build-${{ matrix.build_type }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+
+      - name: Build
+        run: cmake --build build-${{ matrix.build_type }} --parallel
+
+      - name: Test
+        run: ctest --test-dir build-${{ matrix.build_type }} --output-on-failure
+
+      - name: Smoke demos
+        run: |
+          ./build-${{ matrix.build_type }}/gfx_demo
+          ./build-${{ matrix.build_type }}/tinyobj_demo
+          xvfb-run -a ./build-${{ matrix.build_type }}/gfx_window_demo
