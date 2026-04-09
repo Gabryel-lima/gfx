@@ -10,10 +10,10 @@ Backlog vivo para ir fechando as partes que ainda faltam até o projeto ficar co
 ## P0 - Funcionalidade essencial
 - [x] Implementar `gfx_mesh_load` em `gpu/mesh.c` com carregamento real de malha a partir de arquivo.
 - [x] Implementar `gfx_mesh_free` em `gpu/mesh.c` com liberação correta de todos os recursos alocados.
-- [ ] Implementar `gfx_shader_create_from_source` em `gpu/shader.c` retornando um shader real, sem placeholder.
-- [ ] Implementar `gfx_shader_destroy` em `gpu/shader.c` com destruição segura do shader.
-- [ ] Corrigir qualquer fluxo de backend que ainda dependa de comportamento fictício ou de retorno artificial.
-- [ ] Garantir que o backend stub continue útil para smoke tests sem causar recursão ou comportamento confuso.
+- [x] Implementar `gfx_shader_create_from_source` em `gpu/shader.c` retornando um shader real, sem placeholder.
+- [x] Implementar `gfx_shader_destroy` em `gpu/shader.c` com destruição segura do shader.
+- [x] Corrigir qualquer fluxo de backend que ainda dependa de comportamento fictício ou de retorno artificial.
+- [x] Garantir que o backend stub continue útil para smoke tests sem causar recursão ou comportamento confuso.
 
 ## P1 - Robustez do caminho CPU
 - [ ] Melhorar o tratamento de erro em `cpu/fb0_platform.c` para falhas de abertura do framebuffer.

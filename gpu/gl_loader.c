@@ -6,12 +6,27 @@ GLProcs gfx_gl_load(void) {
     GLProcs gl = {0};
     gl.handle = dlopen("libGL.so.1", RTLD_LAZY);
 
+    if (!gl.handle) {
+        return gl;
+    }
+
     // Macro para reduzir boilerplate
-    #define GL_LOAD(name) gl.name = dlsym(gl.handle, "gl" #name)
+    #define GL_LOAD(name) gl.name = (PFN_gl##name)dlsym(gl.handle, "gl" #name)
     GL_LOAD(GenBuffers);
     GL_LOAD(BindBuffer);
     GL_LOAD(BufferData);
     GL_LOAD(CreateShader);
+    GL_LOAD(ShaderSource);
+    GL_LOAD(CompileShader);
+    GL_LOAD(GetShaderiv);
+    GL_LOAD(GetShaderInfoLog);
+    GL_LOAD(DeleteShader);
+    GL_LOAD(CreateProgram);
+    GL_LOAD(AttachShader);
+    GL_LOAD(LinkProgram);
+    GL_LOAD(GetProgramiv);
+    GL_LOAD(GetProgramInfoLog);
+    GL_LOAD(DeleteProgram);
     #undef GL_LOAD
 
     return gl;

@@ -127,7 +127,7 @@ Detalhado em: suporte GPU e carregamento dinâmico.
 
 ### 4. 🧩 Suporte GPU e carregamento dinâmico
 
-Os arquivos em `gpu/` são infraestrutura de integração. `gpu/gl_loader.c` e `gpu/x11_platform.c` resolvem um subconjunto pequeno de símbolos de `libGL.so.1` e `libX11.so` em runtime; `gpu/mesh.c` e `gpu/shader.c` ainda são esboços, então esta visão deve ser lida como scaffolding de backend, não como pipeline GPU completo.
+Os arquivos em `gpu/` são infraestrutura de integração. `gpu/gl_loader.c` e `gpu/x11_platform.c` resolvem um subconjunto pequeno de símbolos de `libGL.so.1` e `libX11.so` em runtime; `gpu/mesh.c` carrega OBJ/MTL em estruturas próprias e `gpu/shader.c` compila e destrói programas GLSL quando há contexto GL disponível. Ainda assim, esta visão continua sendo infraestrutura de backend, não um pipeline GPU completo.
 
 ```mermaid
 flowchart TD
@@ -183,7 +183,7 @@ A superfície estável do projeto está em `include/gfx.h`, `include/gfx_math.h`
 - `gfx_mesh_load`, `gfx_mesh_free`
 - `gfx_shader_create_from_source`, `gfx_shader_destroy`
 
-Observação: `gfx_mesh_load`/`gfx_mesh_free` e `gfx_shader_create_from_source`/`gfx_shader_destroy` ainda são stubs ou esboços, então a integração de backend GPU ainda não está completa.
+Observação: esses helpers já executam trabalho real de carregamento e destruição, mas a integração de backend GPU ainda depende de contexto GL e de uma camada de janela/apresentação que não existe neste repositório.
 
 ### Parser OBJ/MTL em `include/tinyobj_loader.h`
 - `tinyobj_load_obj`, `tinyobj_load_mtl`
