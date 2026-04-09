@@ -14,6 +14,23 @@ int gfx_min(int a, int b) { return a < b ? a : b; }
 
 int gfx_max(int a, int b) { return a > b ? a : b; }
 
+/** @brief Verifica o sinal de um número de ponto flutuante
+ *  @param value Valor a ser verificado
+ *  @return 1 se o valor for negativo, 0 caso contrário
+*/
+static int gfx_float_signbit(float value) {
+    union {
+        float f;
+        uint32_t u;
+    } bits = { value };
+
+    return (bits.u >> 31) != 0;
+}
+
+static int gfx_float_isnan(float value) {
+    return value != value;
+}
+
 /** Calcula o mínimo entre dois valores 
  *  @param a Primeiro valor
  *  @param b Segundo valor
@@ -21,7 +38,26 @@ int gfx_max(int a, int b) { return a > b ? a : b; }
  *  @note A implementação atual é um placeholder. 
  *  Para uma implementação mais robusta, considere casos como NaN e infinitos.
 */
-float gfx_fminf(float a, float b) { return a < b ? a : b; }
+float gfx_fminf(float a, float b) {
+    if (gfx_float_isnan(a)) {
+        return b;
+    }
+    if (gfx_float_isnan(b)) {
+        return a;
+    }
+    if (a < b) {
+        return a;
+    }
+    if (b < a) {
+        return b;
+    }
+
+    if (a == 0.0f && b == 0.0f) {
+        return (gfx_float_signbit(a) || gfx_float_signbit(b)) ? -0.0f : 0.0f;
+    }
+
+    return a;
+}
 
 /** Calcula o máximo entre dois valores
  *  @param a Primeiro valor
@@ -30,7 +66,26 @@ float gfx_fminf(float a, float b) { return a < b ? a : b; }
  *  @note A implementação atual é um placeholder. 
  *  Para uma implementação mais robusta, considere casos como NaN e infinitos.
 */
-float gfx_fmaxf(float a, float b) { return a > b ? a : b; }
+float gfx_fmaxf(float a, float b) {
+    if (gfx_float_isnan(a)) {
+        return b;
+    }
+    if (gfx_float_isnan(b)) {
+        return a;
+    }
+    if (a > b) {
+        return a;
+    }
+    if (b > a) {
+        return b;
+    }
+
+    if (a == 0.0f && b == 0.0f) {
+        return (gfx_float_signbit(a) && gfx_float_signbit(b)) ? -0.0f : 0.0f;
+    }
+
+    return a;
+}
 
 /** Calcula o mínimo entre dois vetores
  *  @param a Primeiro vetor

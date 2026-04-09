@@ -22,7 +22,7 @@ run: build
 	./$(BUILD_DIR)/gfx_demo
 
 test: build
-	$(CMAKE) --build $(BUILD_DIR) --target test
+	ctest --test-dir $(BUILD_DIR) --output-on-failure
 
 install: build
 	$(CMAKE) --install $(BUILD_DIR) --prefix ./dist

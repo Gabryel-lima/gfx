@@ -20,7 +20,15 @@ void gfx_fb_close(Framebuffer *fb) {
 }
 
 void gfx_fb_clear(Framebuffer *fb, uint32_t rgba) {
-	if (!fb || !fb->pixels) return;
-	size_t count = (size_t)fb->width * fb->height;
+	size_t stride;
+	size_t count;
+
+	if (!fb || !fb->pixels || fb->width == 0 || fb->height == 0) return;
+	if ((fb->pitch % sizeof(uint32_t)) != 0) return;
+
+	stride = (size_t)fb->pitch / sizeof(uint32_t);
+	if (stride < (size_t)fb->width) return;
+
+	count = stride * (size_t)fb->height;
 	for (size_t i = 0; i < count; ++i) fb->pixels[i] = rgba;
 }
