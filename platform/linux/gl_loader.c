@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../src/internal/gl_loader.h"
+#include "gl_loader.h"
 
 /** Fecha o handle do OpenGL e limpa a estrutura GLProcs.
  *  @param gl Ponteiro para a estrutura GLProcs a ser liberada.

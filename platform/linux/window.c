@@ -6,10 +6,11 @@
 #include <limits.h>
 #include <math.h>
 
-#include "../src/internal/gl_loader.h"
-#include "../src/internal/mesh.h"
-#include "../src/internal/platform_window.h"
-#include "../src/internal/x11_platform.h"
+#include "gl_loader.h"
+#include "x11_platform.h"
+
+#include "gfx.h"
+#include "gfx_platform_gl_window.h"
 
 #define GFX_GLX_RGBA 4  // Tipo de visual RGBA
 #define GFX_GLX_DOUBLEBUFFER 5  // Visual com buffer duplo
@@ -116,17 +117,6 @@ static Vec3 gfx_platform_window_vec3_normalize_or(Vec3 v, Vec3 fallback) {
     return (Vec3){ v.x / length, v.y / length, v.z / length };
 }
 
-static Mat4 gfx_platform_window_mat4_identity(void) {
-    return (Mat4){
-        .col = {
-            { 1.0f, 0.0f, 0.0f, 0.0f },
-            { 0.0f, 1.0f, 0.0f, 0.0f },
-            { 0.0f, 0.0f, 1.0f, 0.0f },
-            { 0.0f, 0.0f, 0.0f, 1.0f },
-        }
-    };
-}
-
 static Vec4 gfx_platform_window_mat4_mul_vec4(Mat4 matrix, Vec4 v) {
     Vec4 result;
 
@@ -161,7 +151,7 @@ static Mat4 gfx_platform_window_mat4_look_at(Vec3 eye, Vec3 target) {
     right = gfx_platform_window_vec3_normalize_or(right, (Vec3){ 1.0f, 0.0f, 0.0f });
     Vec3 up = gfx_platform_window_vec3_cross(right, forward);
 
-    Mat4 view = gfx_platform_window_mat4_identity();
+    Mat4 view = mat4_identity();
     view.col[0] = (Vec4){ right.x, up.x, -forward.x, 0.0f };
     view.col[1] = (Vec4){ right.y, up.y, -forward.y, 0.0f };
     view.col[2] = (Vec4){ right.z, up.z, -forward.z, 0.0f };
@@ -190,7 +180,7 @@ static Mat4 gfx_platform_window_mat4_perspective(float fov_degrees, float aspect
         fov_degrees = 179.0f;
     }
     if (!(near_plane > 0.0f) || !(far_plane > near_plane)) {
-        return gfx_platform_window_mat4_identity();
+        return mat4_identity();
     }
 
     fov_radians = fov_degrees * (pi / 180.0f);
@@ -495,19 +485,16 @@ static int gfx_platform_window_prepare_mesh_record(PlatformWindow *window, Mesh 
     return 0;
 }
 
-/** Desenha uma malha usando o backend da janela. 
+/** Desenha uma malha usando o backend da janela.
  *  @param ctx Ponteiro para o contexto da janela.
  *  @param mesh Ponteiro para a malha a ser desenhada.
  *  @param transform Matriz de transformação a ser aplicada à malha.
- *  @param mat Material a ser usado para desenhar a malha.
 */
-static void gfx_platform_window_draw_mesh(void *ctx, Mesh *mesh, Mat4 transform, Material *mat) {
+static void gfx_platform_window_draw_mesh(void *ctx, Mesh *mesh, Mat4 transform) {
     PlatformWindow *window = (PlatformWindow *)ctx;
     MeshGpuRecord *record;
     Mat4 model_view_projection;
     GLfloat mvp[16];
-
-    (void)mat;
 
     if (!window || !mesh || !window->shader_program || window->mvp_location < 0 ||
         !window->gl.UseProgram || !window->gl.UniformMatrix4fv || !window->gl.BindBuffer ||
@@ -597,6 +584,15 @@ static void gfx_platform_window_end_frame(void *ctx) {
     window->platform.glXSwapBuffers(window->display, window->window);
 }
 
+/** Libera a janela através do slot `cleanup` do vtable público.
+ *  @param ctx Ponteiro para a janela (repassado como `void *` pelo GfxContext).
+ *  @note Faz o mesmo que chamar `gfx_platform_window_destroy` diretamente;
+ *        existe para que `gfx_cleanup(context)` também funcione.
+ */
+static void gfx_platform_window_cleanup(void *ctx) {
+    gfx_platform_window_destroy((PlatformWindow *)ctx);
+}
+
 /** Retorna o backend da janela.
  *  @return Estrutura GfxBackend contendo os ponteiros para as funções do backend.
  */
@@ -606,6 +602,7 @@ static GfxBackend gfx_platform_window_backend(void) {
         gfx_platform_window_end_frame,
         gfx_platform_window_draw_mesh,
         gfx_platform_window_set_camera,
+        gfx_platform_window_cleanup,
     };
     return backend;
 }
@@ -739,8 +736,8 @@ PlatformWindow *gfx_platform_window_create(const char *title,
     window->camera_position = (Vec3){ 0.0f, 0.0f, 3.0f };
     window->camera_target = (Vec3){ 0.0f, 0.0f, 0.0f };
     window->camera_fov = 60.0f;
-    window->view_matrix = gfx_platform_window_mat4_identity();
-    window->projection_matrix = gfx_platform_window_mat4_identity();
+    window->view_matrix = mat4_identity();
+    window->projection_matrix = mat4_identity();
     window->camera_dirty = 1;
     window->shader_program = 0;
     window->mvp_location = -1;

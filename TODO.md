@@ -8,18 +8,16 @@ Backlog vivo para ir fechando as partes que ainda faltam até o projeto ficar co
 - Se algo deixar de fazer sentido, mova para a seção de notas no fim.
 
 ## P0 - Funcionalidade essencial
-- [x] Implementar `gfx_mesh_load` em `gpu/mesh.c` com carregamento real de malha a partir de arquivo.
-- [x] Implementar `gfx_mesh_free` em `gpu/mesh.c` com liberação correta de todos os recursos alocados.
-- [x] Implementar `gfx_shader_create_from_source` em `gpu/shader.c` retornando um shader real, sem placeholder.
-- [x] Implementar `gfx_shader_destroy` em `gpu/shader.c` com destruição segura do shader.
+- [x] Implementar `gfx_mesh_load` (hoje em `core/gfx_mesh.c`) com carregamento real de malha a partir de arquivo.
+- [x] Implementar `gfx_mesh_free` (hoje em `core/gfx_mesh.c`) com liberação correta de todos os recursos alocados.
 - [x] Corrigir qualquer fluxo de backend que ainda dependa de comportamento fictício ou de retorno artificial.
 - [x] Garantir que o backend stub continue útil para smoke tests sem causar recursão ou comportamento confuso.
 
 ## P1 - Robustez do caminho CPU
-- [x] Melhorar o tratamento de erro em `cpu/fb0_platform.c` para falhas de abertura do framebuffer.
-- [x] Revisar `cpu/framebuffer.c` e `cpu/rasterizer.c` para cobrir melhor casos-limite e erros de entrada.
-- [x] Reavaliar `gfx_fminf` e `gfx_fmaxf` em `src/gfx_math.c` para lidar corretamente com NaN e infinitos, se isso for necessário para o projeto.
-- [x] Decidir se o suporte a quadriláteros em `cpu/rasterizer.c` deve ser implementado ou removido definitivamente.
+- [x] Melhorar o tratamento de erro na abertura do framebuffer Linux (hoje em `platform/linux/fb_open.c`).
+- [x] Revisar o framebuffer e o rasterizador (hoje `core/gfx_framebuffer.c` e `core/gfx_raster.c`) para cobrir melhor casos-limite e erros de entrada.
+- [x] Reavaliar `gfx_fminf` e `gfx_fmaxf` (hoje em `core/gfx_math.c`) para lidar corretamente com NaN e infinitos, se isso for necessário para o projeto.
+- [x] Decidir se o suporte a quadriláteros no rasterizador deve ser implementado ou removido definitivamente.
 
 ## P1 - Parser OBJ/MTL
 - [x] Fechar os `@todo` restantes em `include/tinyobj_loader.h`.
@@ -68,6 +66,17 @@ Backlog vivo para ir fechando as partes que ainda faltam até o projeto ficar co
 	- [x] Automatizar uma validação de saída do `gfx_window_demo` sob Xvfb.
 	- [ ] Avaliar um backend Wayland.
 	- [ ] Avaliar suporte Windows/WGL.
+
+## P0 - Reorganização por responsabilidade (núcleo portátil vs. extras de plataforma)
+- [x] Separar o repositório em `core/` (núcleo portátil: math, rasterizador, framebuffer, mesh, parser OBJ, fachada) e `platform/linux/` (extras: fb0, X11, GL via dlopen).
+- [x] Remover `Material`, tipo fantasma nunca definido que era passado sempre `NULL`.
+- [x] Adicionar o slot `cleanup` a `GfxBackend` e fazer `gfx_cleanup()` chamá-lo de verdade.
+- [x] Remover `gpu/shader.c` e `src/internal/shader.h` (código morto: não compilava em nenhum alvo, duplicado inline em `linux_window.c`).
+- [x] Tornar `Mesh` e o rasterizador (`gfx_raster.h`) parte do contrato público em `include/`, em vez de "internos" que os exemplos precisavam incluir por caminho relativo.
+- [x] Tirar o campo `fd` de `Framebuffer`; quem precisa de um descritor de arquivo usa `GfxLinuxFb` (`gfx_platform_linux_fb.h`).
+- [x] Adicionar `mat4_identity()` a `gfx_math.h` para não ter cada consumidor reescrevendo o mesmo literal.
+- [x] Alvo `gfx_core` no CMake linkado sem `dl`/`m`; opção `GFX_CORE_FREESTANDING_CHECK` prova que o subconjunto matemática+rasterizador+framebuffer compila com `-ffreestanding`.
+- [ ] Portar esse núcleo (`include/` + `core/`) para dentro do kernel do [AlmaOS](https://github.com/Gabryel-lima/AlmaOS) quando o boot lá passar a preencher o framebuffer no `boot_info`.
 
 ## Notas
 - O foco inicial deve ser fechar os stubs e os testes; documentação vem logo depois para não cristalizar promessas falsas.

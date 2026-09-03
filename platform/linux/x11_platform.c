@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "../src/internal/x11_platform.h"
+#include "x11_platform.h"
 
 /** Plataforma GLX  - Tabela de ponteiros para funções e handles de X11/GLX.
  *  @param platform Ponteiro para a estrutura de plataforma a ser liberada.

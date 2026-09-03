@@ -9,20 +9,7 @@
  * @file include/gfx_math.h
  */
 
-/** Framebuffer RGBA compartilhado pelo caminho CPU e pelos previews em memória.
- * @param pixels Ponteiro para os pixels mapeados (formato 0xRRGGBBAA)
- * @param fd File descriptor do framebuffer (usado para fechar o dispositivo)
- * @param width Largura do framebuffer em pixels
- * @param height Altura do framebuffer em pixels
- * @param pitch Número de bytes por linha (usado para calcular offsets)
-*/
-typedef struct Framebuffer {
-    uint32_t *pixels;   /**< Ponteiro para pixels mapeados */
-    int       fd;       /**< File descriptor do framebuffer */
-    uint32_t  width, height, pitch; /**< Largura, altura e pitch (bytes por linha) */
-} Framebuffer;
-
-/** Vetor 2D float 
+/** Vetor 2D float
  * @param x Coordenada X ou componente UV
  * @param y Coordenada Y ou componente UV
 */
@@ -53,6 +40,12 @@ typedef struct Vec4 {
  * @param col Array de 4 colunas, onde cada coluna é um Vec4
 */
 typedef struct Mat4 { Vec4 col[4]; } Mat4;
+
+/** Matriz identidade 4x4.
+ * @return Mat4 identidade (diagonal 1, resto 0).
+ * @note Evita que cada chamador reescreva o mesmo literal de 16 floats.
+*/
+Mat4 mat4_identity(void);
 
 /** gfx_min calcula o valor mínimo entre dois inteiros
  * @param a Primeiro valor

@@ -6,7 +6,7 @@
  *  3D usando TinyOBJ e rasterização. 
  *  @author Gabriel-lima
  *  @date 2026-03-02
- *  @file src/tinyobj_preview.c
+ *  @file core/tinyobj_preview.c
  *  @note Este arquivo é um esboço inicial para renderizar 
  *  um modelo 3D carregado com TinyOBJ usando uma 
  *  abordagem de rasterização software. 
@@ -14,7 +14,7 @@
  *  futuro, e não é uma implementação completa ou otimizada.
 */
 
-#include "internal/rasterizer.h"
+#include "gfx_raster.h"
 #include "tinyobj_loader.h"
 
 /** Esta função calcula os deslocamentos dos vértices de cada face 
@@ -210,7 +210,6 @@ int tinyobj_save_preview_ppm(const TinyObj_Attrib *attrib,
     fb.width = width;
     fb.height = height;
     fb.pitch = width * (uint32_t)sizeof(uint32_t);
-    fb.fd = -1;
     fb.pixels = (uint32_t *)calloc(pixel_count, sizeof(uint32_t));
 
     float *zbuf = (float *)malloc(pixel_count * sizeof(float));

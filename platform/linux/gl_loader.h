@@ -4,7 +4,7 @@
  * @brief Carregador mínimo de símbolos OpenGL via dlopen/dlsym.
  * @author Gabryel-lima
  * @date 2026-03-02
- * @file src/internal/gl_loader.h
+ * @file platform/linux/gl_loader.h
  */
 
 /** Tipo para enums OpenGL */
