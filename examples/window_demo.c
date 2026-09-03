@@ -5,9 +5,8 @@
 #include <time.h>
 
 #include "gfx.h"
-#include "internal/mesh.h"
+#include "gfx_platform_gl_window.h"
 #include "tinyobj_utils.h"
-#include "../src/internal/platform_window.h"
 
 static int gfx_window_demo_resolve_model_path(char *out, size_t size) {
     char executable_path[TINYOBJ_UTILS_PATH_MAX];
@@ -58,14 +57,7 @@ int main(void) {
         return 1;
     }
 
-    model = (Mat4){
-        .col = {
-            { 1.0f, 0.0f, 0.0f, 0.0f },
-            { 0.0f, 1.0f, 0.0f, 0.0f },
-            { 0.0f, 0.0f, 1.0f, 0.0f },
-            { 0.0f, 0.0f, 0.0f, 1.0f },
-        }
-    };
+    model = mat4_identity();
 
     gfx_set_camera(context,
                    (Vec3){ 0.5f, 0.5f, 2.5f },
@@ -81,13 +73,13 @@ int main(void) {
         gfx_platform_window_set_clear_color(window, 0.08f, 0.10f, 0.15f, 1.0f);
 
         gfx_begin_frame(context);
-        gfx_draw_mesh(context, mesh, model, NULL);
+        gfx_draw_mesh(context, mesh, model);
         gfx_end_frame(context);
 
         nanosleep(&frame_delay, NULL);
     }
 
-    gfx_platform_window_destroy(window);
+    gfx_cleanup(context);
     gfx_mesh_free(mesh);
     printf("gfx_window_demo finalizado.\n");
     return 0;

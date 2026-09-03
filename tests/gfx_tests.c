@@ -10,18 +10,18 @@
 #include <unistd.h>
 
 #include "gfx.h"
+#include "gfx_raster.h"
+#include "gfx_platform_linux_fb.h"
 #include "tinyobj_loader.h"
-#include "internal/gl_loader.h"
-#include "internal/mesh.h"
-#include "internal/framebuffer.h"
-#include "internal/rasterizer.h"
-#include "internal/x11_platform.h"
+#include "../platform/linux/gl_loader.h"
+#include "../platform/linux/x11_platform.h"
 
 typedef struct DispatchCounters {
     int begin_count;
     int end_count;
     int draw_count;
     int camera_count;
+    int cleanup_count;
 } DispatchCounters;
 
 static void test_begin_frame(void *ctx) {
@@ -34,11 +34,10 @@ static void test_end_frame(void *ctx) {
     counters->end_count++;
 }
 
-static void test_draw_mesh(void *ctx, Mesh *mesh, Mat4 transform, Material *mat) {
+static void test_draw_mesh(void *ctx, Mesh *mesh, Mat4 transform) {
     DispatchCounters *counters = (DispatchCounters *)ctx;
     (void)mesh;
     (void)transform;
-    (void)mat;
     counters->draw_count++;
 }
 
@@ -50,15 +49,9 @@ static void test_set_camera(void *ctx, Vec3 pos, Vec3 target, float fov) {
     counters->camera_count++;
 }
 
-static void mat4_identity(Mat4 *matrix) {
-    *matrix = (Mat4){
-        .col = {
-            { 1.0f, 0.0f, 0.0f, 0.0f },
-            { 0.0f, 1.0f, 0.0f, 0.0f },
-            { 0.0f, 0.0f, 1.0f, 0.0f },
-            { 0.0f, 0.0f, 0.0f, 1.0f },
-        }
-    };
+static void test_cleanup(void *ctx) {
+    DispatchCounters *counters = (DispatchCounters *)ctx;
+    counters->cleanup_count++;
 }
 
 static float absf_local(float value) {
@@ -167,24 +160,27 @@ static int test_public_facade(void) {
     backend.end_frame = test_end_frame;
     backend.draw_mesh = test_draw_mesh;
     backend.set_camera = test_set_camera;
+    backend.cleanup = test_cleanup;
 
-    context.backend = backend;
-    context.backend_ctx = &counters;
+    gfx_context_init(&context, backend, &counters);
 
-    mat4_identity(&identity);
+    identity = mat4_identity();
 
     gfx_begin_frame(&context);
     gfx_set_camera(&context, (Vec3){ 1.0f, 2.0f, 3.0f }, (Vec3){ 0.0f, 0.0f, 0.0f }, 60.0f);
-    gfx_draw_mesh(&context, NULL, identity, NULL);
+    gfx_draw_mesh(&context, NULL, identity);
     gfx_end_frame(&context);
+    gfx_cleanup(&context);
 
-    if (counters.begin_count != 1 || counters.end_count != 1 || counters.draw_count != 1 || counters.camera_count != 1) {
+    if (counters.begin_count != 1 || counters.end_count != 1 || counters.draw_count != 1 ||
+        counters.camera_count != 1 || counters.cleanup_count != 1) {
         fprintf(stderr, "public facade dispatch failed\n");
         return 1;
     }
 
     backend = gfx_get_stub_backend();
-    if (!backend.begin_frame || !backend.end_frame || !backend.draw_mesh || !backend.set_camera) {
+    if (!backend.begin_frame || !backend.end_frame || !backend.draw_mesh || !backend.set_camera ||
+        !backend.cleanup) {
         fprintf(stderr, "stub backend missing callbacks\n");
         return 1;
     }
@@ -316,7 +312,6 @@ static int test_math_framebuffer_and_rasterizer(void) {
     }
 
     fb.pixels = pixels;
-    fb.fd = -1;
     fb.width = 2;
     fb.height = 2;
     fb.pitch = 12;
@@ -346,8 +341,9 @@ static int test_math_framebuffer_and_rasterizer(void) {
     }
 
     {
-        Framebuffer invalid = gfx_fb_open("/definitely/not/a/real/framebuffer");
-        if (invalid.fd != -1 || invalid.pixels != NULL || invalid.width != 0 || invalid.height != 0 || invalid.pitch != 0) {
+        GfxLinuxFb invalid = gfx_fb_open("/definitely/not/a/real/framebuffer");
+        if (invalid.fd != -1 || invalid.fb.pixels != NULL || invalid.fb.width != 0 ||
+            invalid.fb.height != 0 || invalid.fb.pitch != 0) {
             fprintf(stderr, "gfx_fb_open failed to return an invalid framebuffer on error\n");
             return 1;
         }

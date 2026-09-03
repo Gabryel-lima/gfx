@@ -7,7 +7,7 @@
  * @brief Abstração mínima para carregar X11/GLX dinamicamente no Linux.
  * @author Gabryel-lima
  * @date 2026-03-02
- * @file src/internal/x11_platform.h
+ * @file platform/linux/x11_platform.h
 */
 
 typedef void *GLXContext;  // Tipo opaco para contexto GLX

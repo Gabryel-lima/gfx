@@ -4,5 +4,5 @@
 /** @brief TinyOBJ Loader implementation 
  *  @author Gabryel-lima
  *  @date 2026-03-02
- *  @file src/tinyobj_loader.c
+ *  @file core/tinyobj_loader.c
 */

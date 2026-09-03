@@ -1,6 +1,6 @@
 #include <stddef.h>
 
-#include "internal/rasterizer.h"
+#include "gfx_raster.h"
 
 /** Converte um valor de ponto flutuante para um inteiro, arredondando para baixo.
  *  @param value Valor de ponto flutuante a ser convertido.

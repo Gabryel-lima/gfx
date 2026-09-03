@@ -1,12 +1,14 @@
 #pragma once
 
-#include "../../include/gfx.h"
+#include "gfx.h"
 
 /**
  * @brief Abstração opaca para uma janela Linux com contexto GLX e ciclo de apresentação.
+ * Extra opcional específico de plataforma (Linux + X11 + OpenGL via dlopen);
+ * não faz parte do núcleo do gfx (veja gfx.h e gfx_raster.h).
  * @author Gabryel-lima
  * @date 2026-04-08
- * @file src/internal/platform_window.h
+ * @file include/gfx_platform_gl_window.h
  */
 
 /** Declaração opaca para a estrutura de janela, definida em platform_window.c. */

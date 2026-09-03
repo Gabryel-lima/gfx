@@ -2,21 +2,15 @@
 #include "gfx.h"
 
 int main(void) {
-    // Construir contexto mínimo com backend stub
     GfxContext ctx;
-    ctx.backend = gfx_get_stub_backend();
-    ctx.backend_ctx = NULL;
+    gfx_context_init(&ctx, gfx_get_stub_backend(), NULL);
 
-    // Exemplo simples: chamar begin/draw/end
-    ctx.backend.begin_frame(ctx.backend_ctx);
+    Mat4 ident = mat4_identity();
 
-    Mesh *m = NULL;
-    Material *mat = NULL;
-    Mat4 ident = { .col = { {1,0,0,0}, {0,1,0,0}, {0,0,1,0}, {0,0,0,1} } };
-
-    gfx_draw_mesh(&ctx, m, ident, mat);
-
-    ctx.backend.end_frame(ctx.backend_ctx);
+    gfx_begin_frame(&ctx);
+    gfx_draw_mesh(&ctx, NULL, ident);
+    gfx_end_frame(&ctx);
+    gfx_cleanup(&ctx);
 
     printf("Demo finalizado.\n");
     return 0;

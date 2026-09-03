@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../src/internal/mesh.h"
-#include "../include/tinyobj_loader.h"
+#include "gfx.h"
+#include "tinyobj_loader.h"
 
 /** Estrutura que representa uma malha 3D carregada. 
  *  @param positions Array de posições dos vértices (x, y, z)

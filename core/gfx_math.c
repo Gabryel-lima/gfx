@@ -6,9 +6,21 @@
  *  para evitar erros de link quando a libm não está vinculada. 
  *  @author Gabryel-lima
  *  @date 2026-03-02
- *  @file src/gfx_math.c
+ *  @file core/gfx_math.c
  *  @note Estas funções são pequenas e portáteis.
 */
+
+Mat4 mat4_identity(void) {
+    Mat4 m = {
+        .col = {
+            { 1.0f, 0.0f, 0.0f, 0.0f },
+            { 0.0f, 1.0f, 0.0f, 0.0f },
+            { 0.0f, 0.0f, 1.0f, 0.0f },
+            { 0.0f, 0.0f, 0.0f, 1.0f },
+        }
+    };
+    return m;
+}
 
 int gfx_min(int a, int b) { return a < b ? a : b; }
 
