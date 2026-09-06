@@ -30,22 +30,72 @@
 #define GFX_GL_LINK_STATUS 0x8B82u
 #define GFX_GL_INFO_LOG_LENGTH 0x8B84u
 
+#define GFX_GL_RGB 0x1907u  // Formato de leitura de pixels: três componentes
+
+/* Shaders de iluminação Phong.
+ *
+ * A posição de mundo e a normal viajam como varyings para que a iluminação
+ * seja avaliada por fragmento, e não por vértice. Com malhas de poucos
+ * polígonos — que é o caso de um OBJ facetado — iluminar por vértice faria o
+ * brilho especular saltar de um vértice para outro em vez de deslizar pela
+ * superfície.
+ *
+ * A normal usa uma matriz própria (`u_normal_matrix`, a inversa transposta da
+ * parte 3x3 do modelo) porque normal não se transforma como posição: sob
+ * escala não uniforme, aplicar a matriz de modelo direto deixaria a normal
+ * fora de perpendicular com a superfície.
+ */
 static const char *GFX_PLATFORM_WINDOW_VERTEX_SHADER =
     "#version 120\n"
     "attribute vec3 a_position;\n"
     "attribute vec3 a_color;\n"
+    "attribute vec3 a_normal;\n"
     "uniform mat4 u_mvp;\n"
+    "uniform mat4 u_model;\n"
+    "uniform mat3 u_normal_matrix;\n"
     "varying vec3 v_color;\n"
+    "varying vec3 v_normal;\n"
+    "varying vec3 v_world_position;\n"
     "void main() {\n"
     "    v_color = a_color;\n"
+    "    v_normal = u_normal_matrix * a_normal;\n"
+    "    v_world_position = (u_model * vec4(a_position, 1.0)).xyz;\n"
     "    gl_Position = u_mvp * vec4(a_position, 1.0);\n"
     "}\n";
 
 static const char *GFX_PLATFORM_WINDOW_FRAGMENT_SHADER =
     "#version 120\n"
     "varying vec3 v_color;\n"
+    "varying vec3 v_normal;\n"
+    "varying vec3 v_world_position;\n"
+    "uniform vec3 u_light_direction;\n"
+    "uniform vec3 u_light_color;\n"
+    "uniform vec3 u_ambient_color;\n"
+    "uniform vec3 u_camera_position;\n"
+    "uniform float u_specular_strength;\n"
+    "uniform float u_shininess;\n"
     "void main() {\n"
-    "    gl_FragColor = vec4(v_color, 1.0);\n"
+    "    vec3 normal = normalize(v_normal);\n"
+    "    vec3 light_dir = normalize(u_light_direction);\n"
+    /* Sem backface culling, faces viradas para longe chegam com a normal
+       invertida; alinhá-la com a vista evita que fiquem pretas. */
+    "    vec3 view_dir = normalize(u_camera_position - v_world_position);\n"
+    "    if (dot(normal, view_dir) < 0.0) {\n"
+    "        normal = -normal;\n"
+    "    }\n"
+    "    float diffuse = max(dot(normal, light_dir), 0.0);\n"
+    /* Phong clássico: reflete a luz na normal e compara com a direção de
+       visão. Blinn-Phong usaria o vetor meio-caminho; a diferença aparece no
+       formato do brilho em ângulos rasantes. */
+    "    float specular = 0.0;\n"
+    "    if (diffuse > 0.0) {\n"
+    "        vec3 reflected = reflect(-light_dir, normal);\n"
+    "        specular = pow(max(dot(view_dir, reflected), 0.0), u_shininess);\n"
+    "        specular = specular * u_specular_strength;\n"
+    "    }\n"
+    "    vec3 lit = v_color * (u_ambient_color + u_light_color * diffuse)\n"
+    "             + u_light_color * specular;\n"
+    "    gl_FragColor = vec4(min(lit, vec3(1.0)), 1.0);\n"
     "}\n";
 
 #define GFX_GL_COLOR_BUFFER_BIT 0x00004000u // Máscara para limpar o buffer de cor
@@ -55,6 +105,7 @@ typedef struct MeshGpuRecord {
     const Mesh *mesh;           // Malha associada ao upload; ponteiro emprestado.
     GLuint position_buffer;     // VBO com posições em ordem triangulada.
     GLuint color_buffer;        // VBO com cores expandidas por vértice.
+    GLuint normal_buffer;       // VBO com normais por vértice, para a iluminação.
     size_t vertex_count;        // Número total de vértices no upload atual.
     struct MeshGpuRecord *next; // Próximo item da cache vinculada.
 } MeshGpuRecord;
@@ -80,6 +131,15 @@ struct PlatformWindow {
     int camera_dirty;           // Marca quando view/projection precisam ser recalculadas.
     GLuint shader_program;      // Programa GLSL usado para desenhar malhas.
     GLint mvp_location;         // Local do uniforme MVP no shader.
+    GLint model_location;       // Local do uniforme de matriz de modelo.
+    GLint normal_matrix_location; // Local do uniforme da matriz de normais.
+    GLint light_direction_location;   // Local do uniforme de direção da luz.
+    GLint light_color_location;       // Local do uniforme de cor da luz.
+    GLint ambient_color_location;     // Local do uniforme de luz ambiente.
+    GLint camera_position_location;   // Local do uniforme de posição da câmera.
+    GLint specular_strength_location; // Local do uniforme de intensidade especular.
+    GLint shininess_location;         // Local do uniforme de expoente especular.
+    GfxLight light;             // Luz direcional aplicada a todas as malhas.
     MeshGpuRecord *mesh_records; // Cache de uploads GL por Mesh.
     int should_close;           // Pedido de fechamento da janela.
     GfxContext context_dispatch; // Contexto público que despacha para este backend.
@@ -194,6 +254,61 @@ static Mat4 gfx_platform_window_mat4_perspective(float fov_degrees, float aspect
     return projection;
 }
 
+/** Calcula a matriz de normais: a inversa transposta da parte 3x3 do modelo.
+ *
+ *  Normais não se transformam como posições. Sob escala não uniforme, aplicar
+ *  a matriz de modelo diretamente na normal a tira da perpendicular com a
+ *  superfície, e a iluminação passa a mentir sobre a orientação. A inversa
+ *  transposta corrige isso; para rotações puras ela coincide com a própria
+ *  matriz, então não custa nada no caso comum.
+ *
+ *  @param model Matriz de modelo (colunas em `col[]`).
+ *  @param out Recebe a matriz 3x3 em ordem de coluna, como o GLSL espera.
+ *  @note Para um modelo singular (determinante zero, ex.: escala zero em um
+ *  eixo) devolve a identidade — sem inversa a definir, e uma normal preservada
+ *  é melhor que uma normal infinita.
+ */
+static void gfx_platform_window_normal_matrix(Mat4 model, GLfloat out[9]) {
+    float m00 = model.col[0].x, m01 = model.col[1].x, m02 = model.col[2].x;
+    float m10 = model.col[0].y, m11 = model.col[1].y, m12 = model.col[2].y;
+    float m20 = model.col[0].z, m21 = model.col[1].z, m22 = model.col[2].z;
+
+    /* Cofatores da 3x3; a matriz de cofatores já é a adjunta transposta, que
+     * é exatamente a inversa transposta a menos do determinante. */
+    float c00 = m11 * m22 - m12 * m21;
+    float c01 = m12 * m20 - m10 * m22;
+    float c02 = m10 * m21 - m11 * m20;
+    float c10 = m02 * m21 - m01 * m22;
+    float c11 = m00 * m22 - m02 * m20;
+    float c12 = m01 * m20 - m00 * m21;
+    float c20 = m01 * m12 - m02 * m11;
+    float c21 = m02 * m10 - m00 * m12;
+    float c22 = m00 * m11 - m01 * m10;
+
+    float determinant = m00 * c00 + m01 * c01 + m02 * c02;
+    float inv_determinant;
+
+    if (determinant == 0.0f || determinant != determinant) {
+        out[0] = 1.0f; out[1] = 0.0f; out[2] = 0.0f;
+        out[3] = 0.0f; out[4] = 1.0f; out[5] = 0.0f;
+        out[6] = 0.0f; out[7] = 0.0f; out[8] = 1.0f;
+        return;
+    }
+
+    inv_determinant = 1.0f / determinant;
+
+    /* Ordem de coluna: out[0..2] é a primeira coluna. */
+    out[0] = c00 * inv_determinant;
+    out[1] = c10 * inv_determinant;
+    out[2] = c20 * inv_determinant;
+    out[3] = c01 * inv_determinant;
+    out[4] = c11 * inv_determinant;
+    out[5] = c21 * inv_determinant;
+    out[6] = c02 * inv_determinant;
+    out[7] = c12 * inv_determinant;
+    out[8] = c22 * inv_determinant;
+}
+
 static void gfx_platform_window_mat4_to_array(Mat4 matrix, GLfloat out[16]) {
     out[0] = matrix.col[0].x; out[1] = matrix.col[0].y; out[2] = matrix.col[0].z; out[3] = matrix.col[0].w;
     out[4] = matrix.col[1].x; out[5] = matrix.col[1].y; out[6] = matrix.col[1].z; out[7] = matrix.col[1].w;
@@ -285,6 +400,7 @@ static GLuint gfx_platform_window_create_program(PlatformWindow *window) {
 
     window->gl.BindAttribLocation(program, 0U, "a_position");
     window->gl.BindAttribLocation(program, 1U, "a_color");
+    window->gl.BindAttribLocation(program, 2U, "a_normal");
     window->gl.AttachShader(program, vertex_shader);
     window->gl.AttachShader(program, fragment_shader);
     window->gl.LinkProgram(program);
@@ -326,6 +442,20 @@ static GLuint gfx_platform_window_create_program(PlatformWindow *window) {
             program = 0;
         } else {
             window->mvp_location = mvp_location;
+
+            /* Os demais uniformes são consultados sem exigir sucesso: um
+             * driver pode eliminar um uniforme que o otimizador provou não
+             * influenciar a saída, e glUniform* com localização -1 é um no-op
+             * silencioso por especificação. Falhar aqui derrubaria a janela
+             * por causa de uma otimização legítima. */
+            window->model_location = window->gl.GetUniformLocation(program, "u_model");
+            window->normal_matrix_location = window->gl.GetUniformLocation(program, "u_normal_matrix");
+            window->light_direction_location = window->gl.GetUniformLocation(program, "u_light_direction");
+            window->light_color_location = window->gl.GetUniformLocation(program, "u_light_color");
+            window->ambient_color_location = window->gl.GetUniformLocation(program, "u_ambient_color");
+            window->camera_position_location = window->gl.GetUniformLocation(program, "u_camera_position");
+            window->specular_strength_location = window->gl.GetUniformLocation(program, "u_specular_strength");
+            window->shininess_location = window->gl.GetUniformLocation(program, "u_shininess");
         }
     }
 
@@ -365,6 +495,9 @@ static void gfx_platform_window_release_mesh_cache(PlatformWindow *window) {
             }
             if (record->color_buffer) {
                 window->gl.DeleteBuffers(1, &record->color_buffer);
+            }
+            if (record->normal_buffer) {
+                window->gl.DeleteBuffers(1, &record->normal_buffer);
             }
         }
 
@@ -410,6 +543,7 @@ static int gfx_platform_window_prepare_mesh_record(PlatformWindow *window, Mesh 
     MeshGpuRecord *record = NULL;
     const Vec3 *positions;
     const Vec3 *triangle_colors;
+    const Vec3 *normals;
     Vec3 *expanded_colors = NULL;
     size_t vertex_count;
     size_t triangle_count;
@@ -424,8 +558,9 @@ static int gfx_platform_window_prepare_mesh_record(PlatformWindow *window, Mesh 
     triangle_count = gfx_mesh_triangle_count(mesh);
     positions = gfx_mesh_positions(mesh);
     triangle_colors = gfx_mesh_triangle_colors(mesh);
+    normals = gfx_mesh_normals(mesh);
 
-    if (!positions || !triangle_colors || vertex_count == 0U || triangle_count == 0U ||
+    if (!positions || !triangle_colors || !normals || vertex_count == 0U || triangle_count == 0U ||
         vertex_count != triangle_count * 3U || vertex_count > (size_t)INT_MAX) {
         return -1;
     }
@@ -466,12 +601,26 @@ static int gfx_platform_window_prepare_mesh_record(PlatformWindow *window, Mesh 
 
     free(expanded_colors);
 
-    if (!record->position_buffer || !record->color_buffer) {
+    /* As normais já vêm por vértice do carregador — inclusive quando o OBJ não
+     * traz `vn`, caso em que `gfx_mesh_normals` devolve a normal geométrica da
+     * face. Nada a expandir aqui, ao contrário das cores, que são por
+     * triângulo. */
+    window->gl.GenBuffers(1, &record->normal_buffer);
+    window->gl.BindBuffer(GFX_GL_ARRAY_BUFFER, record->normal_buffer);
+    window->gl.BufferData(GFX_GL_ARRAY_BUFFER,
+                          (GLsizeiptr)(vertex_count * sizeof(*normals)),
+                          normals,
+                          GFX_GL_STATIC_DRAW);
+
+    if (!record->position_buffer || !record->color_buffer || !record->normal_buffer) {
         if (record->position_buffer && window->gl.DeleteBuffers) {
             window->gl.DeleteBuffers(1, &record->position_buffer);
         }
         if (record->color_buffer && window->gl.DeleteBuffers) {
             window->gl.DeleteBuffers(1, &record->color_buffer);
+        }
+        if (record->normal_buffer && window->gl.DeleteBuffers) {
+            window->gl.DeleteBuffers(1, &record->normal_buffer);
         }
         free(record);
         return -1;
@@ -485,6 +634,59 @@ static int gfx_platform_window_prepare_mesh_record(PlatformWindow *window, Mesh 
     return 0;
 }
 
+/** Envia à GPU os uniformes de modelo e de iluminação da malha corrente.
+ *
+ *  Todas as localizações podem ser -1 quando o driver eliminou o uniforme
+ *  correspondente; glUniform* com -1 é um no-op por especificação, então não
+ *  há nada a testar aqui além da existência dos próprios ponteiros de função.
+ *
+ *  @param window Janela cujo estado de luz será enviado.
+ *  @param model Matriz de modelo em ordem de coluna (16 floats).
+ *  @param normal_matrix Matriz de normais em ordem de coluna (9 floats).
+ */
+static void gfx_platform_window_upload_lighting(PlatformWindow *window,
+                                                const GLfloat model[16],
+                                                const GLfloat normal_matrix[9]) {
+    GLfloat light_direction[3];
+    GLfloat light_color[3];
+    GLfloat ambient_color[3];
+    GLfloat camera_position[3];
+
+    if (window->gl.UniformMatrix4fv) {
+        window->gl.UniformMatrix4fv(window->model_location, 1, GFX_GL_FALSE, model);
+    }
+    if (window->gl.UniformMatrix3fv) {
+        window->gl.UniformMatrix3fv(window->normal_matrix_location, 1, GFX_GL_FALSE, normal_matrix);
+    }
+
+    if (!window->gl.Uniform3fv || !window->gl.Uniform1f) {
+        return;
+    }
+
+    light_direction[0] = window->light.direction.x;
+    light_direction[1] = window->light.direction.y;
+    light_direction[2] = window->light.direction.z;
+
+    light_color[0] = window->light.color.x;
+    light_color[1] = window->light.color.y;
+    light_color[2] = window->light.color.z;
+
+    ambient_color[0] = window->light.ambient.x;
+    ambient_color[1] = window->light.ambient.y;
+    ambient_color[2] = window->light.ambient.z;
+
+    camera_position[0] = window->camera_position.x;
+    camera_position[1] = window->camera_position.y;
+    camera_position[2] = window->camera_position.z;
+
+    window->gl.Uniform3fv(window->light_direction_location, 1, light_direction);
+    window->gl.Uniform3fv(window->light_color_location, 1, light_color);
+    window->gl.Uniform3fv(window->ambient_color_location, 1, ambient_color);
+    window->gl.Uniform3fv(window->camera_position_location, 1, camera_position);
+    window->gl.Uniform1f(window->specular_strength_location, window->light.specular_strength);
+    window->gl.Uniform1f(window->shininess_location, window->light.shininess);
+}
+
 /** Desenha uma malha usando o backend da janela.
  *  @param ctx Ponteiro para o contexto da janela.
  *  @param mesh Ponteiro para a malha a ser desenhada.
@@ -495,6 +697,8 @@ static void gfx_platform_window_draw_mesh(void *ctx, Mesh *mesh, Mat4 transform)
     MeshGpuRecord *record;
     Mat4 model_view_projection;
     GLfloat mvp[16];
+    GLfloat model[16];
+    GLfloat normal_matrix[9];
 
     if (!window || !mesh || !window->shader_program || window->mvp_location < 0 ||
         !window->gl.UseProgram || !window->gl.UniformMatrix4fv || !window->gl.BindBuffer ||
@@ -518,8 +722,12 @@ static void gfx_platform_window_draw_mesh(void *ctx, Mesh *mesh, Mat4 transform)
                                                          gfx_platform_window_mat4_mul(window->view_matrix, transform));
     gfx_platform_window_mat4_to_array(model_view_projection, mvp);
 
+    gfx_platform_window_mat4_to_array(transform, model);
+    gfx_platform_window_normal_matrix(transform, normal_matrix);
+
     window->gl.UseProgram(window->shader_program);
     window->gl.UniformMatrix4fv(window->mvp_location, 1, GFX_GL_FALSE, mvp);
+    gfx_platform_window_upload_lighting(window, model, normal_matrix);
 
     window->gl.BindBuffer(GFX_GL_ARRAY_BUFFER, record->position_buffer);
     window->gl.EnableVertexAttribArray(0U);
@@ -528,6 +736,10 @@ static void gfx_platform_window_draw_mesh(void *ctx, Mesh *mesh, Mat4 transform)
     window->gl.BindBuffer(GFX_GL_ARRAY_BUFFER, record->color_buffer);
     window->gl.EnableVertexAttribArray(1U);
     window->gl.VertexAttribPointer(1U, 3, GFX_GL_FLOAT, GFX_GL_FALSE, 0, (const void *)0);
+
+    window->gl.BindBuffer(GFX_GL_ARRAY_BUFFER, record->normal_buffer);
+    window->gl.EnableVertexAttribArray(2U);
+    window->gl.VertexAttribPointer(2U, 3, GFX_GL_FLOAT, GFX_GL_FALSE, 0, (const void *)0);
 
     window->gl.DrawArrays(GFX_GL_TRIANGLES, 0, (GLsizei)record->vertex_count);
 }
@@ -678,7 +890,11 @@ static int gfx_platform_window_validate_procs(const PlatformWindow *window) {
            window->gl.GetProgramiv && window->gl.GetProgramInfoLog && window->gl.DeleteProgram &&
            window->gl.BindAttribLocation && window->gl.UseProgram && window->gl.GetUniformLocation &&
            window->gl.UniformMatrix4fv && window->gl.EnableVertexAttribArray &&
-           window->gl.VertexAttribPointer && window->gl.DrawArrays;
+           window->gl.VertexAttribPointer && window->gl.DrawArrays &&
+           /* Uniformes da iluminação Phong. Sem eles a janela ainda abriria,
+            * mas cada malha sairia com a cor crua do material, o que seria
+            * pior do que dizer que o backend não está disponível. */
+           window->gl.UniformMatrix3fv && window->gl.Uniform3fv && window->gl.Uniform1f;
 }
 
 /** Cria uma nova janela.
@@ -736,6 +952,7 @@ PlatformWindow *gfx_platform_window_create(const char *title,
     window->camera_position = (Vec3){ 0.0f, 0.0f, 3.0f };
     window->camera_target = (Vec3){ 0.0f, 0.0f, 0.0f };
     window->camera_fov = 60.0f;
+    window->light = gfx_platform_window_default_light();
     window->view_matrix = mat4_identity();
     window->projection_matrix = mat4_identity();
     window->camera_dirty = 1;
@@ -925,6 +1142,50 @@ int gfx_platform_window_should_close(const PlatformWindow *window) {
  *  @param blue Componente azul da cor.
  *  @param alpha Componente alfa da cor.
  */
+int gfx_platform_window_read_pixel(PlatformWindow *window,
+                                   unsigned int x,
+                                   unsigned int y,
+                                   float out_rgb[3]) {
+    GLfloat pixel[3] = { 0.0f, 0.0f, 0.0f };
+
+    if (!window || !out_rgb || !window->gl.ReadPixels) {
+        return -1;
+    }
+    if (x >= window->width || y >= window->height) {
+        return -1;
+    }
+
+    window->gl.ReadPixels((GLint)x, (GLint)y, 1, 1, GFX_GL_RGB, GFX_GL_FLOAT, pixel);
+
+    out_rgb[0] = pixel[0];
+    out_rgb[1] = pixel[1];
+    out_rgb[2] = pixel[2];
+    return 0;
+}
+
+GfxLight gfx_platform_window_default_light(void) {
+    GfxLight light;
+
+    /* Vinda de cima, da frente e um pouco da direita: é a posição que dá
+     * relevo a um objeto no centro da cena sem deixar nenhuma face sem
+     * gradiente. O ambiente de 0.18 garante que a face oposta continue
+     * legível em vez de virar uma silhueta preta. */
+    light.direction = (Vec3){ 0.4f, 0.8f, 0.6f };
+    light.color = (Vec3){ 1.0f, 0.97f, 0.92f };
+    light.ambient = (Vec3){ 0.18f, 0.18f, 0.20f };
+    light.specular_strength = 0.35f;
+    light.shininess = 32.0f;
+    return light;
+}
+
+void gfx_platform_window_set_light(PlatformWindow *window, GfxLight light) {
+    if (!window) {
+        return;
+    }
+
+    window->light = light;
+}
+
 void gfx_platform_window_set_clear_color(PlatformWindow *window,
                                          float red,
                                          float green,

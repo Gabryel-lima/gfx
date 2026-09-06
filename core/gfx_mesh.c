@@ -271,6 +271,107 @@ static int gfx_mesh_count_triangles(const TinyObj_Attrib *attrib, size_t *triang
     return 0;
 }
 
+/** Raiz quadrada por Newton-Raphson.
+ *
+ *  O alvo `gfx_core` do CMake é linkado sem `m` de propósito — a mesma razão
+ *  pela qual `gfx_math.c` implementa `gfx_fminf`/`gfx_fmaxf` em vez de usar as
+ *  da libm. Chamar `sqrtf` aqui quebraria esse contrato.
+ *
+ *  @param value Valor não negativo.
+ *  @return Raiz quadrada aproximada; 0 para entradas não positivas.
+ */
+static float gfx_mesh_sqrtf(float value) {
+    float guess;
+    int iteration;
+
+    if (!(value > 0.0f)) {
+        return 0.0f;
+    }
+
+    guess = value;
+    for (iteration = 0; iteration < 20; ++iteration) {
+        guess = 0.5f * (guess + value / guess);
+    }
+
+    return guess;
+}
+
+/** Normal geométrica de um triângulo, pelo produto vetorial das arestas.
+ *  @param a Primeiro vértice.
+ *  @param b Segundo vértice.
+ *  @param c Terceiro vértice.
+ *  @return Normal unitária, ou (0,0,0) para um triângulo degenerado.
+ */
+static Vec3 gfx_mesh_face_normal(Vec3 a, Vec3 b, Vec3 c) {
+    Vec3 edge1 = { b.x - a.x, b.y - a.y, b.z - a.z };
+    Vec3 edge2 = { c.x - a.x, c.y - a.y, c.z - a.z };
+    Vec3 normal = {
+        edge1.y * edge2.z - edge1.z * edge2.y,
+        edge1.z * edge2.x - edge1.x * edge2.z,
+        edge1.x * edge2.y - edge1.y * edge2.x,
+    };
+    float length = gfx_mesh_sqrtf(normal.x * normal.x + normal.y * normal.y + normal.z * normal.z);
+    Vec3 zero = { 0.0f, 0.0f, 0.0f };
+
+    if (length <= 0.0f) {
+        return zero;
+    }
+
+    normal.x /= length;
+    normal.y /= length;
+    normal.z /= length;
+    return normal;
+}
+
+/** Preenche as normais que o arquivo OBJ não trouxe.
+ *
+ *  Um OBJ sem diretivas `vn` deixa as normais zeradas pelo `calloc`, e uma
+ *  normal nula não serve para iluminação: o produto escalar com a luz dá zero
+ *  e a superfície fica preta. Aqui cada vértice sem normal recebe a normal
+ *  geométrica do próprio triângulo, o que dá sombreamento facetado (flat) em
+ *  vez de nada. Vértices que já tinham normal no arquivo são preservados —
+ *  um OBJ com normais suaves continua suave.
+ *
+ *  @param mesh Malha com posições e normais já alocadas.
+ */
+static void gfx_mesh_fill_missing_normals(Mesh *mesh) {
+    size_t triangle;
+
+    if (!mesh || !mesh->positions || !mesh->normals) {
+        return;
+    }
+
+    for (triangle = 0; triangle < mesh->triangle_count; ++triangle) {
+        size_t base = triangle * 3U;
+        Vec3 face_normal;
+        size_t corner;
+        int needs_normal = 0;
+
+        for (corner = 0; corner < 3U; ++corner) {
+            Vec3 normal = mesh->normals[base + corner];
+            if (normal.x == 0.0f && normal.y == 0.0f && normal.z == 0.0f) {
+                needs_normal = 1;
+            }
+        }
+
+        if (!needs_normal) {
+            continue;
+        }
+
+        face_normal = gfx_mesh_face_normal(mesh->positions[base + 0U],
+                                           mesh->positions[base + 1U],
+                                           mesh->positions[base + 2U]);
+
+        for (corner = 0; corner < 3U; ++corner) {
+            Vec3 normal = mesh->normals[base + corner];
+            if (normal.x == 0.0f && normal.y == 0.0f && normal.z == 0.0f) {
+                mesh->normals[base + corner] = face_normal;
+            }
+        }
+    }
+}
+
+
 /** Função principal para carregar uma malha a partir de um arquivo OBJ.
  *  @param path Caminho do arquivo OBJ
  *  @return Ponteiro para a malha carregada ou NULL em caso de erro
@@ -389,8 +490,11 @@ Mesh *gfx_mesh_load(const char *path) {
     tinyobj_shapes_free(shapes, num_shapes);
     tinyobj_materials_free(materials, num_materials);
 
+    gfx_mesh_fill_missing_normals(mesh);
+
     return mesh;
 }
+
 
 /** Função para liberar uma malha.
  *  @param mesh Malha a ser liberada
@@ -413,4 +517,12 @@ const Vec3 *gfx_mesh_positions(const Mesh *mesh) {
 
 const Vec3 *gfx_mesh_triangle_colors(const Mesh *mesh) {
     return mesh ? mesh->triangle_colors : NULL;
+}
+
+const Vec3 *gfx_mesh_normals(const Mesh *mesh) {
+    return mesh ? mesh->normals : NULL;
+}
+
+const Vec2 *gfx_mesh_texcoords(const Mesh *mesh) {
+    return mesh ? mesh->texcoords : NULL;
 }

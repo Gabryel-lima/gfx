@@ -14,6 +14,44 @@
 /** Declaração opaca para a estrutura de janela, definida em platform_window.c. */
 typedef struct PlatformWindow PlatformWindow;
 
+/** Luz direcional usada pelo sombreamento Phong do backend de janela.
+ *
+ *  É direcional, não pontual: os raios chegam paralelos e não há atenuação
+ *  com a distância. É o modelo certo para uma fonte distante (o sol) e o que
+ *  evita ter de escolher constantes de atenuação sem uma escala de cena
+ *  definida.
+ *
+ *  @param direction Direção *da superfície para a luz*, não o contrário. Não
+ *         precisa vir normalizada; o shader normaliza.
+ *  @param color Cor e intensidade da luz; componentes acima de 1.0 estouram.
+ *  @param ambient Termo ambiente, aplicado à cor da malha independentemente da
+ *         orientação. É o que impede que faces sem luz fiquem pretas.
+ *  @param specular_strength Peso do brilho especular, tipicamente 0.0 a 1.0.
+ *  @param shininess Expoente especular: valores altos dão um brilho pequeno e
+ *         concentrado, valores baixos dão um brilho amplo e suave.
+ */
+typedef struct GfxLight {
+    Vec3  direction;
+    Vec3  color;
+    Vec3  ambient;
+    float specular_strength;
+    float shininess;
+} GfxLight;
+
+/** Luz padrão aplicada a uma janela recém-criada.
+ *  @return Uma luz branca vinda de cima e da frente, com ambiente suave.
+ *  @note Serve como ponto de partida sensato: qualquer malha carregada
+ *  aparece iluminada sem que o chamador precise configurar nada.
+ */
+GfxLight gfx_platform_window_default_light(void);
+
+/** Ajusta a luz usada no sombreamento das malhas.
+ *  @param window Ponteiro para a janela.
+ *  @param light Nova configuração de luz.
+ *  @note Vale para todas as malhas desenhadas a partir do próximo frame.
+ */
+void gfx_platform_window_set_light(PlatformWindow *window, GfxLight light);
+
 /** Cria uma janela nativa Linux com contexto GLX 
  *  já associado. 
  *  @param title Título da janela.
@@ -66,6 +104,22 @@ void gfx_platform_window_set_clear_color(PlatformWindow *window,
                                          float green,
                                          float blue,
                                          float alpha);
+
+/** Lê a cor de um pixel já desenhado no frame corrente.
+ *  @param window Ponteiro para a janela.
+ *  @param x Coluna, com origem no canto inferior esquerdo (convenção do OpenGL).
+ *  @param y Linha, com origem no canto inferior esquerdo.
+ *  @param out_rgb Recebe os três componentes em [0,1].
+ *  @return Zero em caso de sucesso, diferente de zero em caso de erro.
+ *  @note Precisa ser chamada entre `gfx_begin_frame` e `gfx_end_frame`: lê o
+ *  back buffer, que `gfx_end_frame` troca. Existe para tornar a saída do
+ *  backend verificável sem alguém olhando a tela — é o que permite checar o
+ *  sombreamento sob Xvfb.
+ */
+int gfx_platform_window_read_pixel(PlatformWindow *window,
+                                   unsigned int x,
+                                   unsigned int y,
+                                   float out_rgb[3]);
 
 /** Retorna o contexto público que despacha para a janela. 
  *  @param window Ponteiro para a janela que deve fornecer o contexto.

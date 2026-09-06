@@ -65,10 +65,14 @@ GLProcs gfx_gl_load(void) {
     GL_LOAD(UseProgram);
     GL_LOAD(GetUniformLocation);
     GL_LOAD(UniformMatrix4fv);
+    GL_LOAD(UniformMatrix3fv);
+    GL_LOAD(Uniform3fv);
+    GL_LOAD(Uniform1f);
     GL_LOAD(DeleteBuffers);
     GL_LOAD(EnableVertexAttribArray);
     GL_LOAD(VertexAttribPointer);
     GL_LOAD(DrawArrays);
+    GL_LOAD(ReadPixels);
     #undef GL_LOAD
 
     return gl;

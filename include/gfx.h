@@ -115,3 +115,24 @@ const Vec3 *gfx_mesh_positions(const Mesh *mesh);
  * @note Os dados são não-possuidos pelo chamador e permanecem válidos até `gfx_mesh_free`.
  */
 const Vec3 *gfx_mesh_triangle_colors(const Mesh *mesh);
+
+/** Retorna o array contíguo de normais por vértice.
+ * @param mesh Ponteiro para a malha.
+ * @return Ponteiro para a primeira normal ou NULL em caso de erro.
+ * @note O array é paralelo ao de posições: uma normal por vértice.
+ * @note Nunca vem zerado por falta de dados no arquivo. Se o OBJ não trouxer
+ *       diretivas `vn`, cada vértice recebe a normal geométrica do próprio
+ *       triângulo — sombreamento facetado em vez de superfície preta. Normais
+ *       presentes no arquivo são preservadas como estão.
+ * @note Os dados são não-possuidos pelo chamador e permanecem válidos até `gfx_mesh_free`.
+ */
+const Vec3 *gfx_mesh_normals(const Mesh *mesh);
+
+/** Retorna o array contíguo de coordenadas de textura por vértice.
+ * @param mesh Ponteiro para a malha.
+ * @return Ponteiro para o primeiro UV ou NULL em caso de erro.
+ * @note O array é paralelo ao de posições: um UV por vértice. Vértices de um
+ *       OBJ sem diretivas `vt` ficam com (0,0).
+ * @note Os dados são não-possuidos pelo chamador e permanecem válidos até `gfx_mesh_free`.
+ */
+const Vec2 *gfx_mesh_texcoords(const Mesh *mesh);

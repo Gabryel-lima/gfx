@@ -1,0 +1,9 @@
+# Material único do cube.obj: cinza neutro, para que a variação visível entre
+# as faces seja consequência da iluminação e não da cor do material.
+newmtl cube_surface
+Ka 0.000 0.000 0.000
+Kd 0.750 0.750 0.780
+Ks 1.000 1.000 1.000
+Ns 32.0
+d 1.0
+illum 2

@@ -419,6 +419,151 @@ static int test_math_framebuffer_and_rasterizer(void) {
     return 0;
 }
 
+
+/** Conta em quais pixels um triângulo escreveu, usando um alvo limpo.
+ *  @param out_covered Array de `width*height` bytes; recebe 1 onde houve escrita.
+ *  @param width Largura do alvo.
+ *  @param height Altura do alvo.
+ *  @param p0,p1,p2 Vértices do triângulo.
+ */
+static void rasterize_coverage(unsigned char *out_covered, int width, int height,
+                               Vec4 p0, Vec4 p1, Vec4 p2) {
+    static uint32_t pixels[64];
+    static float zbuf[64];
+    Framebuffer fb;
+    int i;
+
+    for (i = 0; i < width * height; ++i) {
+        pixels[i] = 0U;
+        zbuf[i] = FLT_MAX;
+    }
+
+    fb.pixels = pixels;
+    fb.width = (uint32_t)width;
+    fb.height = (uint32_t)height;
+    fb.pitch = (uint32_t)width * (uint32_t)sizeof(uint32_t);
+
+    gfx_rasterize_triangle(&fb, zbuf, p0, p1, p2,
+                           (Vec3){ 1.0f, 1.0f, 1.0f },
+                           (Vec3){ 1.0f, 1.0f, 1.0f },
+                           (Vec3){ 1.0f, 1.0f, 1.0f });
+
+    for (i = 0; i < width * height; ++i) {
+        out_covered[i] = (pixels[i] != 0U) ? 1 : 0;
+    }
+}
+
+/** Compara um canal de uma cor RGBA com o valor esperado, com folga de 1.
+ *  @param rgba Cor no formato 0xRRGGBBAA.
+ *  @param shift Deslocamento do canal (24 = R, 16 = G, 8 = B).
+ *  @param expected Valor esperado em 8 bits.
+ *  @return Diferente de zero se o canal estiver dentro da tolerância.
+ */
+static int channel_close(uint32_t rgba, unsigned shift, int expected) {
+    int actual = (int)((rgba >> shift) & 0xFFu);
+    int delta = actual - expected;
+
+    if (delta < 0) {
+        delta = -delta;
+    }
+    return delta <= 1;
+}
+
+static int test_rasterizer_perspective_and_fill_rule(void) {
+    uint32_t pixels[100];
+    float zbuf[100];
+    Framebuffer fb;
+    size_t i;
+
+    /* Triângulo escolhido para que o pixel (4,1) tenha baricêntricas exatas
+     * de 0.375 / 0.5 / 0.125 em espaço de tela. Com w = 1 nos três vértices a
+     * interpolação é afim; com w = 9 no vértice azul a correção perspectiva
+     * empurra o peso dele para baixo por um fator de 9. */
+    const Vec4 corner_a = { 0.5f, 0.5f, 0.0f, 1.0f };
+    const Vec4 corner_b = { 8.5f, 0.5f, 0.0f, 1.0f };
+    const Vec4 corner_c = { 0.5f, 8.5f, 0.0f, 1.0f };
+    const Vec3 red = { 1.0f, 0.0f, 0.0f };
+    const Vec3 blue = { 0.0f, 0.0f, 1.0f };
+
+    fb.pixels = pixels;
+    fb.width = 10;
+    fb.height = 10;
+    fb.pitch = 10 * (uint32_t)sizeof(uint32_t);
+
+    /* --- caso afim: w = 1 em todos, deve dar a mistura 50/50 --- */
+    for (i = 0; i < 100; ++i) {
+        pixels[i] = 0U;
+        zbuf[i] = FLT_MAX;
+    }
+    gfx_rasterize_triangle(&fb, zbuf, corner_a, corner_b, corner_c, red, blue, red);
+
+    if (!channel_close(pixels[1 * 10 + 4], 24, 127) ||
+        !channel_close(pixels[1 * 10 + 4], 8, 127)) {
+        fprintf(stderr,
+                "affine interpolation changed: expected ~127/127, got 0x%08x\n",
+                pixels[1 * 10 + 4]);
+        return 1;
+    }
+
+    /* --- caso perspectivo: mesmo triângulo, w = 9 no vértice azul --- */
+    {
+        Vec4 far_corner = corner_b;
+        far_corner.w = 9.0f;
+
+        for (i = 0; i < 100; ++i) {
+            pixels[i] = 0U;
+            zbuf[i] = FLT_MAX;
+        }
+        gfx_rasterize_triangle(&fb, zbuf, corner_a, far_corner, corner_c, red, blue, red);
+
+        /* pesos = 0.375/1, 0.5/9, 0.125/1 -> vermelho 0.9, azul 0.1 */
+        if (!channel_close(pixels[1 * 10 + 4], 24, 229) ||
+            !channel_close(pixels[1 * 10 + 4], 8, 25)) {
+            fprintf(stderr,
+                    "perspective-correct interpolation wrong: expected ~229/25, got 0x%08x\n",
+                    pixels[1 * 10 + 4]);
+            return 1;
+        }
+    }
+
+    /* --- regra top-left: dois triângulos compartilhando a diagonal --- */
+    {
+        unsigned char covered_lower[64];
+        unsigned char covered_upper[64];
+        int both = 0;
+        int neither = 0;
+
+        rasterize_coverage(covered_lower, 8, 8,
+                           (Vec4){ 0.0f, 0.0f, 0.0f, 1.0f },
+                           (Vec4){ 8.0f, 0.0f, 0.0f, 1.0f },
+                           (Vec4){ 8.0f, 8.0f, 0.0f, 1.0f });
+        rasterize_coverage(covered_upper, 8, 8,
+                           (Vec4){ 0.0f, 0.0f, 0.0f, 1.0f },
+                           (Vec4){ 8.0f, 8.0f, 0.0f, 1.0f },
+                           (Vec4){ 0.0f, 8.0f, 0.0f, 1.0f });
+
+        for (i = 0; i < 64; ++i) {
+            if (covered_lower[i] && covered_upper[i]) {
+                both++;
+            }
+            if (!covered_lower[i] && !covered_upper[i]) {
+                neither++;
+            }
+        }
+
+        if (both != 0) {
+            fprintf(stderr, "top-left rule failed: %d pixel(s) drawn twice\n", both);
+            return 1;
+        }
+        if (neither != 0) {
+            fprintf(stderr, "top-left rule failed: %d pixel(s) left as a gap\n", neither);
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 static int test_tinyobj_loader_and_preview(void) {
     char dir_template[] = "/tmp/gfx-tests-XXXXXX";
     char *dir;
@@ -566,6 +711,7 @@ int main(void) {
     failures += run_test("mesh loader", test_mesh_loader);
     failures += run_test("dynamic loaders", test_dynamic_loaders);
     failures += run_test("math framebuffer rasterizer", test_math_framebuffer_and_rasterizer);
+    failures += run_test("rasterizer perspective and fill rule", test_rasterizer_perspective_and_fill_rule);
     failures += run_test("tinyobj loader and preview", test_tinyobj_loader_and_preview);
 
     if (failures != 0) {

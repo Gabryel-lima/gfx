@@ -51,10 +51,14 @@ typedef void  (*PFN_glDeleteProgram)   (GLuint);                                
 typedef void  (*PFN_glUseProgram)      (GLuint);                                 // Ativa programa
 typedef GLint (*PFN_glGetUniformLocation)(GLuint, const GLchar*);                // Localiza uniform
 typedef void  (*PFN_glUniformMatrix4fv) (GLint, GLsizei, GLboolean, const GLfloat*); // Envia matriz 4x4
+typedef void  (*PFN_glUniformMatrix3fv) (GLint, GLsizei, GLboolean, const GLfloat*); // Envia matriz 3x3 (matriz de normais)
+typedef void  (*PFN_glUniform3fv)      (GLint, GLsizei, const GLfloat*);             // Envia vetor de 3 floats (cor/direção de luz)
+typedef void  (*PFN_glUniform1f)       (GLint, GLfloat);                             // Envia um float (brilho, intensidade)
 typedef void  (*PFN_glDeleteBuffers)   (GLsizei, const GLuint*);                 // Remove buffers
 typedef void  (*PFN_glEnableVertexAttribArray)(GLuint);                          // Habilita atributo de vértice
 typedef void  (*PFN_glVertexAttribPointer)(GLuint, GLint, GLenum, GLboolean, GLsizei, const void*); // Define atributo de vértice
 typedef void  (*PFN_glDrawArrays)      (GLenum, GLint, GLsizei);                 // Desenha arrays
+typedef void  (*PFN_glReadPixels)      (GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, void*); // Lê pixels de volta do framebuffer
 
 /**
  * Tabela com funções OpenGL carregadas dinamicamente.
@@ -91,10 +95,14 @@ typedef struct GLProcs {
     PFN_glUseProgram    UseProgram;    /**< Ponteiro para glUseProgram */
     PFN_glGetUniformLocation GetUniformLocation; /**< Ponteiro para glGetUniformLocation */
     PFN_glUniformMatrix4fv UniformMatrix4fv; /**< Ponteiro para glUniformMatrix4fv */
+    PFN_glUniformMatrix3fv UniformMatrix3fv; /**< Ponteiro para glUniformMatrix3fv */
+    PFN_glUniform3fv    Uniform3fv;    /**< Ponteiro para glUniform3fv */
+    PFN_glUniform1f     Uniform1f;     /**< Ponteiro para glUniform1f */
     PFN_glDeleteBuffers DeleteBuffers; /**< Ponteiro para glDeleteBuffers */
     PFN_glEnableVertexAttribArray EnableVertexAttribArray; /**< Ponteiro para glEnableVertexAttribArray */
     PFN_glVertexAttribPointer VertexAttribPointer; /**< Ponteiro para glVertexAttribPointer */
     PFN_glDrawArrays    DrawArrays;    /**< Ponteiro para glDrawArrays */
+    PFN_glReadPixels    ReadPixels;    /**< Ponteiro para glReadPixels */
 } GLProcs;
 
 /**
